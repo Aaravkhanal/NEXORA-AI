@@ -39,8 +39,8 @@ export default function AssistantPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 shrink-0">
         <div>
-          <h1 className="text-2xl font-syne font-bold text-nexora-charcoal flex items-center gap-2">
-            <Brain className="w-6 h-6 text-nexora-emerald" />
+          <h1 className="text-2xl font-syne font-bold text-nexora-navy flex items-center gap-2">
+            <Brain className="w-6 h-6 text-nexora-green" />
             Intelligence Assistant
           </h1>
           <p className="text-sm text-nexora-text-secondary mt-1">Chat with the multi-agent system about market trends, strategy, or previously saved companies.</p>
@@ -54,11 +54,11 @@ export default function AssistantPage() {
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center max-w-md mx-auto text-center space-y-6">
               <div className="w-20 h-20 bg-white rounded-3xl shadow-sm border border-nexora-border-subtle flex items-center justify-center relative">
-                <span className="font-syne font-bold text-3xl text-nexora-charcoal">N</span>
-                <Sparkles className="w-6 h-6 text-nexora-gold absolute -top-2 -right-2 animate-pulse" />
+                <span className="font-syne font-bold text-3xl text-nexora-navy">N</span>
+                <Sparkles className="w-6 h-6 text-nexora-yellow absolute -top-2 -right-2 animate-pulse" />
               </div>
               <div>
-                <h3 className="font-syne font-bold text-xl text-nexora-charcoal mb-2">How can I assist you today?</h3>
+                <h3 className="font-syne font-bold text-xl text-nexora-navy mb-2">How can I assist you today?</h3>
                 <p className="text-nexora-text-secondary text-sm">I can help you analyze competitors, synthesize market data, or review your recent intelligence reports.</p>
               </div>
               
@@ -71,10 +71,10 @@ export default function AssistantPage() {
                   <button 
                     key={i}
                     onClick={() => setChatInput(prompt)}
-                    className="flex items-center justify-between p-3 bg-white border border-nexora-border-subtle rounded-xl hover:border-nexora-emerald hover:shadow-sm transition-all group text-left"
+                    className="flex items-center justify-between p-3 bg-white border border-nexora-border-subtle rounded-xl hover:border-nexora-green hover:shadow-sm transition-all group text-left"
                   >
-                    <span className="text-sm font-medium text-nexora-charcoal group-hover:text-nexora-emerald transition-colors">{prompt}</span>
-                    <ArrowRight className="w-4 h-4 text-nexora-text-muted group-hover:text-nexora-emerald opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                    <span className="text-sm font-medium text-nexora-navy group-hover:text-nexora-green transition-colors">{prompt}</span>
+                    <ArrowRight className="w-4 h-4 text-nexora-text-muted group-hover:text-nexora-green opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                   </button>
                 ))}
               </div>
@@ -101,7 +101,7 @@ export default function AssistantPage() {
           {isLoading && (
             <div className="flex justify-start">
               <div className="chat-bubble-ai p-4 flex gap-2 items-center">
-                <Loader2 className="w-4 h-4 text-nexora-emerald animate-spin" />
+                <Loader2 className="w-4 h-4 text-nexora-green animate-spin" />
                 <span className="text-xs text-nexora-text-muted font-medium tracking-wider uppercase">Agents Thinking...</span>
               </div>
             </div>
@@ -116,13 +116,13 @@ export default function AssistantPage() {
               value={chatInput}
               onChange={e => setChatInput(e.target.value)}
               placeholder="Ask anything..."
-              className="w-full bg-nexora-offwhite border-2 border-transparent focus:border-nexora-emerald focus:bg-white rounded-2xl py-4 pl-6 pr-14 text-nexora-charcoal placeholder:text-nexora-text-muted transition-all shadow-sm focus:outline-none"
+              className="w-full bg-nexora-offwhite border-2 border-transparent focus:border-nexora-green focus:bg-white rounded-2xl py-4 pl-6 pr-14 text-nexora-navy placeholder:text-nexora-text-muted transition-all shadow-sm focus:outline-none"
               disabled={isLoading}
             />
             <button 
               type="submit"
               disabled={isLoading || !chatInput.trim()}
-              className="absolute right-2 top-2 bottom-2 w-12 bg-nexora-charcoal text-white rounded-xl flex items-center justify-center hover:bg-nexora-charcoalLight disabled:opacity-50 transition-colors"
+              className="absolute right-2 top-2 bottom-2 w-12 bg-nexora-navy text-white rounded-xl flex items-center justify-center hover:bg-nexora-navy-light disabled:opacity-50 transition-colors"
             >
               <Send className="w-5 h-5" />
             </button>

@@ -11,7 +11,7 @@ export function TopNav({ toggleSidebar }: { toggleSidebar: () => void }) {
       <div className="flex items-center gap-4 flex-1">
         <button 
           onClick={toggleSidebar}
-          className="lg:hidden p-2 -ml-2 text-nexora-text-muted hover:text-nexora-charcoal rounded-lg hover:bg-nexora-offwhite transition-colors"
+          className="lg:hidden p-2 -ml-2 text-nexora-text-muted hover:text-nexora-navy rounded-lg hover:bg-nexora-offwhite transition-colors"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -22,11 +22,11 @@ export function TopNav({ toggleSidebar }: { toggleSidebar: () => void }) {
       </div>
       
       <div className="flex items-center gap-2 sm:gap-4">
-        <button className="p-2 text-nexora-text-muted hover:text-nexora-charcoal rounded-full hover:bg-nexora-offwhite transition-colors relative">
+        <button className="p-2 text-nexora-text-muted hover:text-nexora-navy rounded-full hover:bg-nexora-offwhite transition-colors relative">
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-nexora-emerald rounded-full border-2 border-white"></span>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-nexora-green rounded-full border-2 border-white"></span>
         </button>
-        <button className="p-2 text-nexora-text-muted hover:text-nexora-charcoal rounded-full hover:bg-nexora-offwhite transition-colors hidden sm:block">
+        <button className="p-2 text-nexora-text-muted hover:text-nexora-navy rounded-full hover:bg-nexora-offwhite transition-colors hidden sm:block">
           <HelpCircle className="w-5 h-5" />
         </button>
         <div className="w-px h-6 bg-nexora-border-subtle mx-1 hidden sm:block"></div>

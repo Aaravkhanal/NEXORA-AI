@@ -105,16 +105,16 @@ export function FloatingAssistant() {
             }`}
           >
             {/* Header */}
-            <div className="p-4 bg-nexora-charcoal text-white flex justify-between items-center shrink-0">
+            <div className="p-4 bg-nexora-navy text-white flex justify-between items-center shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-nexora-charcoalLight flex items-center justify-center relative">
-                  <Brain className="w-4 h-4 text-nexora-emerald" />
-                  <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-nexora-emerald rounded-full border-2 border-nexora-charcoal"></div>
+                <div className="w-8 h-8 rounded-lg bg-nexora-navy-light flex items-center justify-center relative">
+                  <Brain className="w-4 h-4 text-nexora-green" />
+                  <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-nexora-green rounded-full border-2 border-nexora-navy"></div>
                 </div>
                 <div>
                   <h3 className="font-syne font-bold text-sm">Nexora Assistant</h3>
                   <p className="text-[10px] text-nexora-text-muted flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-nexora-gold" /> Multi-LLM Active
+                    <Sparkles className="w-3 h-3 text-nexora-yellow" /> Multi-LLM Active
                   </p>
                 </div>
               </div>
@@ -133,9 +133,9 @@ export function FloatingAssistant() {
               {chatMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-6">
                   <div className="w-16 h-16 rounded-2xl bg-white border border-nexora-border-subtle flex items-center justify-center shadow-sm mb-4">
-                    <MessageSquare className="w-8 h-8 text-nexora-emerald opacity-80" />
+                    <MessageSquare className="w-8 h-8 text-nexora-green opacity-80" />
                   </div>
-                  <h4 className="font-syne font-bold text-nexora-charcoal mb-2">How can I help?</h4>
+                  <h4 className="font-syne font-bold text-nexora-navy mb-2">How can I help?</h4>
                   <p className="text-sm text-nexora-text-secondary">
                     I can analyze revenue, summarize competitors, or extract key insights from the active company dashboard.
                   </p>
@@ -145,7 +145,7 @@ export function FloatingAssistant() {
                       <button 
                         key={prompt}
                         onClick={() => setChatInput(prompt)}
-                        className="text-xs bg-white border border-nexora-border-subtle text-nexora-charcoal px-3 py-1.5 rounded-full hover:border-nexora-emerald hover:text-nexora-emerald transition-colors shadow-sm"
+                        className="text-xs bg-white border border-nexora-border-subtle text-nexora-navy px-3 py-1.5 rounded-full hover:border-nexora-green hover:text-nexora-green transition-colors shadow-sm"
                       >
                         {prompt}
                       </button>
@@ -200,7 +200,7 @@ export function FloatingAssistant() {
               {isChatLoading && (
                 <div className="flex justify-start">
                   <div className="chat-bubble-ai p-4 flex gap-1.5 items-center">
-                    <Loader2 className="w-4 h-4 text-nexora-emerald animate-spin" />
+                    <Loader2 className="w-4 h-4 text-nexora-green animate-spin" />
                     <span className="text-xs text-nexora-text-muted font-medium tracking-wider uppercase">Synthesizing...</span>
                   </div>
                 </div>
@@ -217,13 +217,13 @@ export function FloatingAssistant() {
                   value={chatInput}
                   onChange={e => setChatInput(e.target.value)}
                   placeholder="Ask a question... (Cmd+J to toggle)"
-                  className="w-full bg-nexora-offwhite border border-nexora-border-subtle rounded-xl py-3 pl-4 pr-12 text-sm text-nexora-charcoal placeholder:text-nexora-text-muted focus:outline-none focus:border-nexora-emerald focus:ring-2 focus:ring-nexora-emerald/10 transition-all"
+                  className="w-full bg-nexora-offwhite border border-nexora-border-subtle rounded-xl py-3 pl-4 pr-12 text-sm text-nexora-navy placeholder:text-nexora-text-muted focus:outline-none focus:border-nexora-green focus:ring-2 focus:ring-nexora-green/10 transition-all"
                   disabled={isChatLoading}
                 />
                 <button 
                   type="submit"
                   disabled={isChatLoading || !chatInput.trim()}
-                  className="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-nexora-charcoal text-white rounded-lg disabled:opacity-50 hover:bg-nexora-charcoalLight transition-colors flex items-center justify-center"
+                  className="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-nexora-navy text-white rounded-lg disabled:opacity-50 hover:bg-nexora-navy-light transition-colors flex items-center justify-center"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -238,14 +238,14 @@ export function FloatingAssistant() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-nexora-charcoal text-white rounded-2xl shadow-premium flex items-center justify-center z-40 group border border-nexora-charcoalLight"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-nexora-navy text-white rounded-2xl shadow-premium flex items-center justify-center z-40 group border border-nexora-navy-light"
       >
         {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
         {!isOpen && (
-          <span className="absolute right-full mr-4 bg-nexora-charcoal text-white text-xs font-medium px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm border border-nexora-border-subtle">
+          <span className="absolute right-full mr-4 bg-nexora-navy text-white text-xs font-medium px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm border border-nexora-border-subtle">
             Ask Nexora AI
             {/* Tooltip arrow */}
-            <span className="absolute top-1/2 -right-1 w-2 h-2 bg-nexora-charcoal transform -translate-y-1/2 rotate-45"></span>
+            <span className="absolute top-1/2 -right-1 w-2 h-2 bg-nexora-navy transform -translate-y-1/2 rotate-45"></span>
           </span>
         )}
       </motion.button>

@@ -11,13 +11,13 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'default', icon, className = '' }: BadgeProps) {
   const variants = {
-    emerald: 'bg-nexora-warmGreen text-nexora-forest border-nexora-emerald/20',
-    amber: 'bg-nexora-softOrange text-nexora-orange border-nexora-orange/20',
-    gold: 'bg-nexora-gold/10 text-nexora-gold border-nexora-gold/20',
+    emerald: 'bg-nexora-green/20 text-nexora-green border-nexora-green/20',
+    amber: 'bg-nexora-orange/20 text-nexora-orange border-nexora-orange/20',
+    gold: 'bg-nexora-yellow/10 text-nexora-yellow border-nexora-yellow/20',
     rose: 'bg-rose-50 text-rose-700 border-rose-200',
-    charcoal: 'bg-nexora-charcoal text-white border-nexora-charcoal',
-    outline: 'bg-transparent text-nexora-charcoalLight border-nexora-offwhite hover:bg-nexora-offwhite',
-    default: 'bg-nexora-offwhite text-nexora-charcoalLight border-nexora-subtle'
+    charcoal: 'bg-nexora-navy text-white border-nexora-navy',
+    outline: 'bg-transparent text-nexora-navy-light border-nexora-offwhite hover:bg-nexora-offwhite',
+    default: 'bg-nexora-offwhite text-nexora-navy-light border-nexora-subtle'
   }
 
   return (

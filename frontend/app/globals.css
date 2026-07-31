@@ -6,12 +6,13 @@
 @source "../components";
 
 @theme {
-  --color-nexora-charcoal: #1A2128;
-  --color-nexora-charcoal-light: #2C3540;
+  --color-nexora-navy: #1A1D29;
+  --color-nexora-navy-light: #2A2E3D;
   --color-nexora-cream: #FAFAFA;
   --color-nexora-offwhite: #F3F4F6;
-  --color-nexora-emerald: #10B981;
-  --color-nexora-forest: #047857;
+  --color-nexora-orange: #F5A623;
+  --color-nexora-green: #5B9B4B;
+  --color-nexora-yellow: #FACC15;
   
   --font-sans: "Inter", system-ui, sans-serif;
   --font-display: "Syne", system-ui, sans-serif;
@@ -20,12 +21,12 @@
   /* Nexora Colors */
   --bg-primary: #FAFAFA;
   --bg-secondary: #F3F4F6;
-  --text-primary: #1A2128;
+  --text-primary: #1A1D29;
   --text-secondary: #4B5563;
   --text-muted: #9CA3AF;
   
   --border-subtle: #E5E7EB;
-  --border-active: #10B981;
+  --border-active: #F5A623;
 }
 
 * {
@@ -96,7 +97,7 @@ body {
   font-weight: 700;
 }
 .prose-nexora a {
-  color: #10B981;
+  color: var(--color-nexora-orange);
   text-decoration: none;
   font-weight: 500;
 }
@@ -106,7 +107,7 @@ body {
 
 /* Chat bubble */
 .chat-bubble-user {
-  background-color: #1A2128;
+  background-color: var(--color-nexora-navy);
   color: white;
   border-radius: 16px 16px 4px 16px;
 }

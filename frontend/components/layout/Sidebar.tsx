@@ -42,13 +42,13 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
       {/* Mobile overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-nexora-charcoal/20 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-nexora-navy/20 backdrop-blur-sm z-40 lg:hidden"
           onClick={closeSidebar}
         />
       )}
 
       {/* Sidebar container */}
-      <aside className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-nexora-cream border-r border-nexora-border-subtle flex flex-col transition-transform duration-300 ease-in-out ${
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[260px] lg:static lg:flex-shrink-0 bg-nexora-cream border-r border-nexora-border-subtle flex flex-col transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         
@@ -56,15 +56,15 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
         <div className="h-16 flex items-center justify-between px-6 border-b border-nexora-border-subtle shrink-0">
           <Link href="/" className="flex items-center gap-2 group">
             {/* Nexora Owl Icon Placeholder */}
-            <div className="w-8 h-8 rounded-lg bg-nexora-charcoal flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform">
+            <div className="w-8 h-8 rounded-lg bg-nexora-navy flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform">
               <span className="text-white font-syne font-bold">N</span>
-              <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-nexora-gold animate-pulse"></div>
+              <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-nexora-yellow animate-pulse"></div>
             </div>
-            <span className="font-syne font-bold text-xl text-nexora-charcoal tracking-tight">
+            <span className="font-syne font-bold text-xl text-nexora-navy tracking-tight">
               Nexora
             </span>
           </Link>
-          <button onClick={closeSidebar} className="lg:hidden p-1 text-nexora-text-muted hover:text-nexora-charcoal rounded-md">
+          <button onClick={closeSidebar} className="lg:hidden p-1 text-nexora-text-muted hover:text-nexora-navy rounded-md">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -83,11 +83,11 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
                     href={item.href}
                     className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
                       isActive 
-                        ? 'bg-nexora-charcoal text-white shadow-md' 
-                        : 'text-nexora-text-secondary hover:bg-nexora-offwhite hover:text-nexora-charcoal'
+                        ? 'bg-nexora-navy text-white shadow-md' 
+                        : 'text-nexora-text-secondary hover:bg-nexora-offwhite hover:text-nexora-navy'
                     }`}
                   >
-                    <item.icon className={`w-4 h-4 ${isActive ? 'text-nexora-emerald' : ''}`} />
+                    <item.icon className={`w-4 h-4 ${isActive ? 'text-nexora-green' : ''}`} />
                     {item.name}
                   </Link>
                 )
@@ -106,14 +106,14 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
                     href={item.href}
                     className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all group ${
                       isActive 
-                        ? 'bg-nexora-charcoal text-white shadow-md' 
+                        ? 'bg-nexora-navy text-white shadow-md' 
                         : item.highlight 
-                          ? 'bg-nexora-emerald/10 text-nexora-forest hover:bg-nexora-emerald/20 border border-nexora-emerald/20'
-                          : 'text-nexora-text-secondary hover:bg-nexora-offwhite hover:text-nexora-charcoal'
+                          ? 'bg-nexora-green/10 text-nexora-green hover:bg-nexora-green/20 border border-nexora-green/20'
+                          : 'text-nexora-text-secondary hover:bg-nexora-offwhite hover:text-nexora-navy'
                     }`}
                   >
                     <item.icon className={`w-4 h-4 ${
-                      isActive ? 'text-nexora-emerald' : item.highlight ? 'text-nexora-emerald' : ''
+                      isActive ? 'text-nexora-green' : item.highlight ? 'text-nexora-green' : ''
                     }`} />
                     {item.name}
                     {item.highlight && !isActive && (
@@ -134,7 +134,7 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
               <Link
                 key={item.name}
                 href={item.href}
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-nexora-text-secondary hover:bg-nexora-offwhite hover:text-nexora-charcoal transition-all"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-nexora-text-secondary hover:bg-nexora-offwhite hover:text-nexora-navy transition-all"
               >
                 <item.icon className="w-4 h-4" />
                 {item.name}
@@ -144,8 +144,8 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
           
           <div className="mt-4 px-3 py-3 bg-nexora-offwhite rounded-xl border border-nexora-border-subtle">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-nexora-emerald animate-pulse"></div>
-              <span className="text-xs font-bold text-nexora-charcoal uppercase tracking-wide">System Status</span>
+              <div className="w-2 h-2 rounded-full bg-nexora-green animate-pulse"></div>
+              <span className="text-xs font-bold text-nexora-navy uppercase tracking-wide">System Status</span>
             </div>
             <p className="text-xs text-nexora-text-muted">All intelligence engines active.</p>
           </div>
