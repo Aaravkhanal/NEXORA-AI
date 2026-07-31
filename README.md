@@ -1,177 +1,96 @@
-# 🧠 Nexus Intelligence
+# 🦉 Nexora AI
 
-**Enterprise AI Company Intelligence Platform**
+**AI-Powered Company Intelligence & Strategic Decision Platform**
 
-> Research any company in seconds. Comprehensive AI-generated intelligence reports, financial insights, competitor analysis, technology stack detection, and a RAG-powered interactive chatbot — all powered by Google Gemini.
-
-![Nexus Intelligence](https://img.shields.io/badge/Nexus-Intelligence-6366F1?style=for-the-badge&logo=brain&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js_14-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![ChromaDB](https://img.shields.io/badge/ChromaDB-RAG-FF6B6B?style=for-the-badge)
+Nexora AI is an enterprise-grade intelligence platform that transforms public data into executive intelligence. By leveraging a multi-agent AI architecture and real-time crawling across 8+ premium data sources, Nexora synthesizes financial data, maps competitors, and builds a comprehensive RAG (Retrieval-Augmented Generation) knowledge base for any company in seconds.
 
 ---
 
-## ✨ Features
+## 🌟 Key Features
 
-| Feature | Details |
-|---|---|
-| 🔍 **Multi-Source Research** | Wikipedia, GitHub, News APIs, Yahoo Finance, Web Crawling |
-| 🤖 **AI Report Generation** | 8 parallel LLM chains synthesizing all data into structured sections |
-| 💬 **RAG Chatbot** | ChromaDB vector store + semantic search + citation-backed answers |
-| 📊 **Interactive Charts** | Revenue trends, competitor radar, language distribution |
-| ⚡ **Real-time Progress** | Server-Sent Events for live pipeline updates |
-| 🏢 **Competitor Analysis** | Auto-identified competitors with SWOT and comparison tables |
-| 🛠️ **Tech Stack Detection** | Infers frontend, backend, databases, cloud providers |
-| 💰 **Financial Intelligence** | Revenue estimates, funding rounds, market cap, growth rates |
+- **Automated Intelligence Gathering**: Enter a company name or website, and Nexora crawls Wikipedia, Crunchbase, GitHub, News, HackerNews, Reddit, ProductHunt, and financial databases.
+- **Multi-LLM Architecture**: Intelligent routing between high-tier models (Gemini 3.1 Pro, Llama 3) for specialized tasks like financial synthesis, threat assessment, and strategic recommendations.
+- **Interactive Executive Dashboard**: A beautiful, responsive, widget-based dashboard showcasing health scores, SWOT analysis, revenue tracking, and competitor matrices.
+- **Interactive AI Assistant**: A globally available, floating AI assistant that can answer deep strategic questions about any analyzed company using a robust RAG vector database (ChromaDB).
+- **Export Capabilities**: Seamlessly export reports to PDF and Raw JSON.
 
 ---
 
-## 🚀 Quick Start
+## 🏗️ System Architecture
+
+Nexora AI is built on a modern, decoupled architecture:
+
+### Frontend
+- **Framework**: Next.js 14+ (React)
+- **Styling**: Tailwind CSS & Framer Motion
+- **Data Visualization**: Recharts
+- **Design System**: Custom Nexora Enterprise UI
+
+### Backend
+- **Framework**: FastAPI (Python)
+- **Database**: SQLite (Job Store & Application State)
+- **Vector Store**: ChromaDB for RAG implementation
+- **AI Orchestration**: Custom Multi-Agent Pipeline (Analyst -> Critic -> Polisher)
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
+- Node.js (v18+)
+- Python (3.10+)
+- API Keys: 
+  - `GROQ_API_KEY`
+  - `GEMINI_API_KEY`
+  - `NVIDIA_API_KEY`
+  - `TAVILY_API_KEY` (Optional for advanced search)
 
-- Python 3.10+
-- Node.js 18+
-- Google Gemini API Key ([get one free](https://aistudio.google.com))
+### Backend Setup
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -e .
+   ```
+4. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Add your API keys to .env
+   ```
+5. Run the server:
+   ```bash
+   uvicorn app.main:app --reload --port 8000
+   ```
 
-### 1. Backend Setup
-
-```bash
-cd backend
-
-# Install dependencies
-pip install -e .
-
-# Configure your API keys
-cp .env.example .env
-# Edit .env and add at minimum: GEMINI_API_KEY=your_key_here
-
-# Start the API server
-uvicorn app.main:app --reload --port 8000
-```
-
-The API will be available at `http://localhost:8000`  
-Interactive docs: `http://localhost:8000/api/docs`
-
-### 2. Frontend Setup
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start the dev server
-npm run dev
-```
-
-Open `http://localhost:3000` 🎉
-
----
-
-## 🔑 API Keys
-
-| Key | Required? | Get It | Purpose |
-|-----|-----------|--------|---------|
-| `GEMINI_API_KEY` | ✅ **Required** | [aistudio.google.com](https://aistudio.google.com) | LLM + Embeddings |
-| `GITHUB_TOKEN` | Recommended | GitHub Settings → Tokens | Higher rate limits for tech stack |
-| `NEWS_API_KEY` | Recommended | [newsapi.org](https://newsapi.org) | Recent news (100 req/day free) |
-| `ALPHA_VANTAGE_KEY` | Optional | [alphavantage.co](https://alphavantage.co) | Financial data |
-| `OPENAI_API_KEY` | Optional | [platform.openai.com](https://platform.openai.com) | Alternative LLM to Gemini |
-
----
-
-## 🏗️ Architecture
-
-```
-nexus-intelligence/
-├── backend/                     FastAPI Python API
-│   └── app/
-│       ├── api/routes/          REST endpoints (research, report, chat, progress)
-│       ├── core/                Config, logging
-│       ├── db/                  ChromaDB vector store + in-memory job store
-│       ├── models/              Pydantic schemas (25+ models)
-│       └── services/
-│           ├── ai/              LLM client, RAG engine, report generator
-│           ├── crawlers/        Async web crawler + content extractor
-│           ├── retrievers/      Wikipedia, GitHub, News, Finance
-│           └── report/          Pipeline orchestrator
-└── frontend/                    Next.js 14 App Router
-    ├── app/
-    │   ├── page.tsx             Landing / search hero
-    │   └── report/[id]/         Full intelligence report + chat
-    └── lib/
-        └── api.ts               Typed API client
-```
-
-### Data Flow
-
-```
-User Input → POST /api/research → Job Created
-     ↓
-GET /api/progress/{id} (SSE) ← Real-time updates
-     ↓
-Parallel: Wikipedia + GitHub + News + Finance + Web Crawl
-     ↓
-Chunk + Embed → ChromaDB (RAG knowledge base)
-     ↓
-8 parallel LLM chains → Structured report sections
-     ↓
-GET /api/report/{id} → Full CompanyReport JSON
-     ↓
-POST /api/chat/{id} → Semantic search + LLM → Answer + Citations
-```
+### Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env.local
+   ```
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 📡 API Endpoints
+## 🛡️ License
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/research` | Start a company research job |
-| `GET` | `/api/job/{id}` | Get job status |
-| `GET` | `/api/progress/{id}` | SSE progress stream |
-| `GET` | `/api/report/{id}` | Get full intelligence report |
-| `POST` | `/api/chat/{id}` | Chat with RAG chatbot |
-| `GET` | `/api/chat/{id}/history` | Get conversation history |
-| `GET` | `/api/health` | Health check |
-
----
-
-## 🎨 UI Highlights
-
-- **Dark glassmorphism** design with gradient accents
-- **Sidebar navigation** with scroll-spy active states
-- **Score rings** for AI-generated intelligence scores
-- **SWOT matrix** with color-coded quadrants
-- **Competitor radar chart** for visual benchmarking
-- **Tech stack tags** color-coded by category
-- **Floating chat panel** with source citations
-- **Real-time progress** with animated step tracker
-
----
-
-## 🧪 Development
-
-```bash
-# Backend tests
-cd backend && pytest tests/ -v
-
-# Frontend build check
-cd frontend && npm run build
-
-# Full type check
-cd frontend && npx tsc --noEmit
-```
-
----
-
-## 📁 Original Repository
-
-This project was originally forked from a LangChain `RunnableParallel` research demo (Wikipedia + GitHub retriever) and has been completely redesigned and rebuilt as an enterprise AI platform. The original LangChain parallel execution pattern has been preserved and extended in the new pipeline architecture.
-
----
-
-## 📄 License
-
-MIT
+Copyright © 2026 Nexora AI. All rights reserved.
+This project is proprietary and confidential. Unauthorized copying, modification, or distribution is strictly prohibited.
