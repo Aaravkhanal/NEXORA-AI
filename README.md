@@ -1,36 +1,64 @@
-# 🦉 Nexora AI
-
-**AI-Powered Company Intelligence & Strategic Decision Platform**
-
-Nexora AI is an enterprise-grade intelligence platform that transforms public data into executive intelligence. By leveraging a multi-agent AI architecture and real-time crawling across 8+ premium data sources, Nexora synthesizes financial data, maps competitors, and builds a comprehensive RAG (Retrieval-Augmented Generation) knowledge base for any company in seconds.
+<div align="center">
+  <img src="logo.png" alt="Nexora AI Logo" width="250"/>
+  <h1>🦉 Nexora AI</h1>
+  <p><strong>AI-Powered Company Intelligence & Strategic Decision Platform</strong></p>
+</div>
 
 ---
 
-## 🌟 Key Features
+## 🧐 What does this project do exactly?
 
-- **Automated Intelligence Gathering**: Enter a company name or website, and Nexora crawls Wikipedia, Crunchbase, GitHub, News, HackerNews, Reddit, ProductHunt, and financial databases.
-- **Multi-LLM Architecture**: Intelligent routing between high-tier models (Gemini 3.1 Pro, Llama 3) for specialized tasks like financial synthesis, threat assessment, and strategic recommendations.
-- **Interactive Executive Dashboard**: A beautiful, responsive, widget-based dashboard showcasing health scores, SWOT analysis, revenue tracking, and competitor matrices.
-- **Interactive AI Assistant**: A globally available, floating AI assistant that can answer deep strategic questions about any analyzed company using a robust RAG vector database (ChromaDB).
-- **Export Capabilities**: Seamlessly export reports to PDF and Raw JSON.
+**Nexora AI** is an enterprise-grade intelligence platform that automates deep company research.
+
+Traditionally, understanding a company's market position, financial health, technology stack, and competitors requires hours of manual web scraping, reading Wikipedia articles, analyzing Crunchbase data, and sifting through recent news. 
+
+Nexora AI automates this entire process. You simply input a company name or website URL, and Nexora orchestrates a swarm of AI agents to:
+1. **Crawl** the web across 8 premium data sources in parallel.
+2. **Synthesize** the unstructured data into structured intelligence (financials, SWOT, products).
+3. **Generate** a beautiful, interactive executive dashboard.
+4. **Build** a dedicated RAG (Retrieval-Augmented Generation) knowledge base, allowing you to chat with an AI assistant to ask deep, strategic questions about the company.
+
+---
+
+## 🔄 How it Works (The Flow)
+
+Nexora AI utilizes a highly optimized, decoupled architecture (FastAPI Backend + Next.js Frontend) to deliver intelligence in seconds.
+
+### 1. User Input & Discovery
+The user enters a company name (e.g., "Stripe") or a website (e.g., "https://stripe.com"). The backend's AI Router identifies the correct entity, normalizes the name, and initiates the research job.
+
+### 2. Parallel Data Crawling
+Using Python's `asyncio` and LangChain's `RunnableParallel`, Nexora simultaneously fires off retrievers to gather raw data from:
+- **Wikipedia** (History, general overview)
+- **Crunchbase / Financial APIs** (Funding, revenue, leadership)
+- **GitHub** (Open source presence, technology stack)
+- **News APIs** (Recent mentions, sentiment analysis)
+- **HackerNews & Reddit** (Public perception, developer sentiment)
+- **ProductHunt** (Product launches)
+- **Official Website** (Direct web crawling and scraping)
+
+### 3. Multi-Agent Synthesis
+The raw data is fed into a **Multi-LLM Pipeline** (orchestrating models like Gemini 3.1 Pro and Llama 3 via Groq). The pipeline uses specialized agents:
+- **The Analyst**: Extracts hard metrics (revenue, employees, tech stack).
+- **The Critic**: Identifies risks, threats, and competitor advantages.
+- **The Polisher**: Formats the intelligence into a cohesive executive summary, SWOT matrix, and health scores.
+
+### 4. Vector Knowledge Base (RAG)
+As the data is synthesized, it is simultaneously chunked and embedded into a local **ChromaDB Vector Store**. This creates a persistent knowledge base for that specific company.
+
+### 5. Interactive Dashboard & Assistant
+The frontend (built with Next.js and Tailwind CSS) polls the SQLite job store via Server-Sent Events (SSE). Once the data is ready, it renders an interactive dashboard featuring:
+- **Interactive Widgets**: Health scores, funding timelines, and market narratives.
+- **Competitor Matrices**: Side-by-side feature comparisons.
+- **Floating AI Assistant**: A globally available chat widget. When you ask a question (e.g., *"What is their biggest weakness?"*), the assistant queries the ChromaDB vector store to provide highly accurate, cited answers based *only* on the retrieved data.
 
 ---
 
 ## 🏗️ System Architecture
 
-Nexora AI is built on a modern, decoupled architecture:
-
-### Frontend
-- **Framework**: Next.js 14+ (React)
-- **Styling**: Tailwind CSS & Framer Motion
-- **Data Visualization**: Recharts
-- **Design System**: Custom Nexora Enterprise UI
-
-### Backend
-- **Framework**: FastAPI (Python)
-- **Database**: SQLite (Job Store & Application State)
-- **Vector Store**: ChromaDB for RAG implementation
-- **AI Orchestration**: Custom Multi-Agent Pipeline (Analyst -> Critic -> Polisher)
+- **Frontend**: Next.js 14+, Tailwind CSS, Framer Motion, Recharts, Custom Nexora Enterprise UI.
+- **Backend**: FastAPI (Python), SQLite (Job & State Store), ChromaDB (Vector Store).
+- **AI Engine**: LangChain, Multi-Agent Routing (Gemini API, Groq).
 
 ---
 
@@ -39,54 +67,28 @@ Nexora AI is built on a modern, decoupled architecture:
 ### Prerequisites
 - Node.js (v18+)
 - Python (3.10+)
-- API Keys: 
-  - `GROQ_API_KEY`
-  - `GEMINI_API_KEY`
-  - `NVIDIA_API_KEY`
-  - `TAVILY_API_KEY` (Optional for advanced search)
+- API Keys: `GROQ_API_KEY`, `GEMINI_API_KEY`, `NVIDIA_API_KEY`, `TAVILY_API_KEY` (Optional)
 
-### Backend Setup
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -e .
-   ```
-4. Set up environment variables:
-   ```bash
-   cp .env.example .env
-   # Add your API keys to .env
-   ```
-5. Run the server:
-   ```bash
-   uvicorn app.main:app --reload --port 8000
-   ```
+### 1. Backend Setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -e .
+cp .env.example .env      # Add your API keys to .env
+uvicorn app.main:app --reload --port 8000
+```
 
-### Frontend Setup
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up environment variables:
-   ```bash
-   cp .env.example .env.local
-   ```
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+### 2. Frontend Setup
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+> **Note on Logo**: Please place the `logo.png` file in the root directory of the repository so it displays correctly in this README!
 
 ---
 
