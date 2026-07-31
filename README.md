@@ -8,7 +8,7 @@
 
 ## 🧐 What does this project do exactly?
 
-**Nexora AI** is an enterprise-grade intelligence platform that automates deep company research.
+Nexora Intelligence is an AI-powered company intelligence platform that researches businesses, analyzes competitors, generates SWOT and financial insights, builds interactive dashboards, and provides source-backed reports with an AI assistant powered by RAG and multi-LLM workflows.
 
 Traditionally, understanding a company's market position, financial health, technology stack, and competitors requires hours of manual web scraping, reading Wikipedia articles, analyzing Crunchbase data, and sifting through recent news. 
 

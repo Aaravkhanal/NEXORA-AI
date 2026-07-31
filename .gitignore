@@ -8,3 +8,8 @@ __pycache__/
 .ruff_cache/
 dist/
 build/
+
+# Data
+backend/data/*.db
+backend/data/*.sqlite3
+backend/data/chroma/
