@@ -47,7 +47,7 @@ async def _emit(job_id: str, step: str, message: str, progress: int) -> None:
         status=JobStatus.RUNNING,
     )
     await job_store.emit_progress(event)
-    job_store.update_job(job_id, progress=progress, current_step=message)
+    await job_store.update_job_async(job_id, progress=progress, current_step=message)
     logger.info("[%s] %d%% — %s", job_id[:8], progress, message)
 
 
@@ -274,7 +274,7 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
         )
 
         job_store.save_report(report)
-        job_store.update_job(
+        await job_store.update_job_async(
             job_id,
             status=JobStatus.COMPLETED,
             progress=100,
@@ -289,7 +289,7 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
 
     except Exception as exc:
         logger.exception("Pipeline failed for job %s: %s", job_id, exc)
-        job_store.update_job(
+        await job_store.update_job_async(
             job_id,
             status=JobStatus.FAILED,
             error=str(exc),
