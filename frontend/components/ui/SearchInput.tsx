@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Globe, ArrowRight, Loader2, Building2 } from 'lucide-react'
+import { Search, Globe, ArrowRight, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import api from '@/lib/api'
 
@@ -17,6 +17,11 @@ export function SearchInput({ className = '', autoFocus = false, large = false }
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // Progress Overlay State
+  const [activeJobId, setActiveJobId] = useState<string | null>(null)
+  const [progressMsg, setProgressMsg] = useState('Initializing AI agents...')
+  const [progressValue, setProgressValue] = useState(0)
 
   // Simple heuristic: if it contains a dot and no spaces, treat as URL
   const isUrl = input.trim().length > 3 && input.includes('.') && !input.includes(' ')
@@ -31,68 +36,158 @@ export function SearchInput({ className = '', autoFocus = false, large = false }
     try {
       const payload = isUrl ? { website: input } : { company_name: input }
       const response = await api.startResearch(payload)
-      router.push(`/report/${response.job_id}`)
+      setActiveJobId(response.job_id)
+      setProgressValue(10)
+      setProgressMsg('Crawling public data sources...')
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to start research.')
       setIsLoading(false)
     }
   }
 
+  // Poll progress if activeJobId is set
+  useEffect(() => {
+    if (!activeJobId) return
+
+    const interval = setInterval(async () => {
+      try {
+        const status = await api.getJobStatus(activeJobId)
+        if (status.progress > progressValue) {
+          setProgressValue(status.progress)
+          setProgressMsg(status.current_step)
+        }
+        
+        if (status.status === 'completed' && status.report_id) {
+          clearInterval(interval)
+          setProgressValue(100)
+          setProgressMsg('Finalizing dashboard...')
+          setTimeout(() => {
+            router.push(`/report/${status.report_id}`)
+            // Reset state after navigation
+            setTimeout(() => {
+              setActiveJobId(null)
+              setIsLoading(false)
+            }, 1000)
+          }, 500)
+        } else if (status.status === 'failed') {
+          clearInterval(interval)
+          setError(status.error || 'Research failed')
+          setActiveJobId(null)
+          setIsLoading(false)
+        }
+      } catch (err) {
+        console.error("Failed to poll status", err)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [activeJobId, progressValue, router])
+
   return (
-    <div className={`relative w-full ${className}`}>
-      <form onSubmit={handleSubmit} className="relative group">
-        <div className={`absolute left-0 top-0 bottom-0 flex items-center justify-center text-nexora-text-muted transition-colors group-focus-within:text-nexora-green ${large ? 'w-14' : 'w-10'}`}>
-          {isLoading ? (
-            <Loader2 className={`animate-spin ${large ? 'w-6 h-6' : 'w-5 h-5'}`} />
-          ) : isUrl ? (
-            <Globe className={large ? 'w-6 h-6' : 'w-4 h-4'} />
-          ) : (
-            <Search className={large ? 'w-6 h-6' : 'w-4 h-4'} />
-          )}
-        </div>
-        
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Search for a company or enter a website URL..."
-          autoFocus={autoFocus}
-          className={`w-full bg-white border-2 border-nexora-offwhite rounded-2xl text-nexora-navy placeholder:text-slate-400 focus:outline-none focus:border-nexora-green focus:ring-4 focus:ring-nexora-green/10 transition-all shadow-sm ${
-            large ? 'py-5 pl-14 pr-24 text-lg' : 'py-3 pl-10 pr-14 text-sm'
-          }`}
-          disabled={isLoading}
-        />
-        
-        <div className={`absolute right-2 top-2 bottom-2 flex items-center gap-2`}>
-          {input.trim() && !isLoading && (
-            <span className="hidden sm:flex text-xs font-semibold text-nexora-green bg-nexora-green/20 px-2 py-1 rounded-md items-center gap-1">
-              <span className="opacity-50">Press</span> Enter
-            </span>
-          )}
-          <button
-            type="submit"
-            disabled={isLoading || !input.trim()}
-            className={`bg-nexora-navy hover:bg-nexora-navy-light text-white rounded-xl flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
-              large ? 'w-12 h-full' : 'w-10 h-full'
+    <>
+      <div className={`relative w-full ${className}`}>
+        <form onSubmit={handleSubmit} className="relative group">
+          <div className={`absolute left-0 top-0 bottom-0 flex items-center justify-center text-nexora-mediumgray transition-colors group-focus-within:text-nexora-emerald ${large ? 'w-16' : 'w-12'}`}>
+            {isLoading && !activeJobId ? (
+              <Loader2 className={`animate-spin ${large ? 'w-6 h-6' : 'w-5 h-5'}`} />
+            ) : isUrl ? (
+              <Globe className={large ? 'w-6 h-6' : 'w-4 h-4'} />
+            ) : (
+              <Search className={large ? 'w-6 h-6' : 'w-4 h-4'} />
+            )}
+          </div>
+          
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Search for a company..."
+            autoFocus={autoFocus}
+            className={`w-full bg-white border border-black/5 rounded-2xl text-nexora-charcoal placeholder:text-nexora-mediumgray focus:outline-none focus:border-nexora-emerald focus:ring-4 focus:ring-nexora-emerald/10 transition-all shadow-sm ${
+              large ? 'py-5 pl-16 pr-24 text-lg' : 'py-3 pl-12 pr-14 text-sm'
             }`}
-          >
-            <ArrowRight className={large ? 'w-5 h-5' : 'w-4 h-4'} />
-          </button>
-        </div>
-      </form>
-      
+            disabled={isLoading}
+          />
+          
+          <div className={`absolute right-2 top-2 bottom-2 flex items-center gap-2`}>
+            {!input.trim() && large && (
+              <span className="hidden sm:flex text-xs font-bold text-nexora-mediumgray border border-black/10 px-2 py-1 rounded items-center gap-1">
+                ⌘K
+              </span>
+            )}
+            <button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className={`bg-nexora-charcoal hover:bg-nexora-black text-white rounded-xl flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                large ? 'w-12 h-full' : 'w-10 h-full'
+              }`}
+            >
+              <ArrowRight className={large ? 'w-5 h-5' : 'w-4 h-4'} />
+            </button>
+          </div>
+        </form>
+        
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute top-full left-0 right-0 mt-2 p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-center gap-2 z-10"
+            >
+              <span className="font-bold">Error:</span> {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Progress Overlay Modal */}
       <AnimatePresence>
-        {error && (
+        {activeJobId && (
           <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 right-0 mt-2 p-3 bg-rose-50 text-rose-700 text-sm rounded-xl border border-rose-100 flex items-center gap-2 z-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-white/80 backdrop-blur-md z-50 flex items-center justify-center"
           >
-            <span className="font-bold">Error:</span> {error}
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="w-full max-w-md bg-white p-8 rounded-3xl shadow-glass border border-black/5 text-center relative overflow-hidden"
+            >
+              {/* Animated Owl Walking */}
+              <div className="relative h-24 mb-6">
+                <motion.div 
+                  className="absolute bottom-0 left-0"
+                  animate={{ 
+                    x: [`0%`, `300%`], // Walk across
+                  }}
+                  transition={{ 
+                    duration: 4,
+                    ease: "linear",
+                    repeat: Infinity
+                  }}
+                >
+                  <img src="/owl.png" alt="Owl Walking" className="w-16 h-16 object-contain animate-float" />
+                </motion.div>
+              </div>
+
+              <h2 className="text-xl font-bold text-nexora-charcoal mb-2">Analyzing {input}</h2>
+              <p className="text-sm font-medium text-nexora-emerald mb-8 min-h-[20px]">{progressMsg}</p>
+
+              {/* Custom Progress Bar */}
+              <div className="w-full h-3 bg-nexora-warmwhite rounded-full overflow-hidden border border-black/5">
+                <motion.div 
+                  className="h-full bg-nexora-emerald progress-bar-striped"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressValue}%` }}
+                  transition={{ ease: "easeOut" }}
+                />
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   )
 }

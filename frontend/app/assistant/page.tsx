@@ -11,7 +11,7 @@ export default function AssistantPage() {
   const [messages, setMessages] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!chatInput.trim() || isLoading) return
     
@@ -53,13 +53,13 @@ export default function AssistantPage() {
         <div className="flex-1 overflow-y-auto p-6 bg-nexora-cream/50 space-y-6">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center max-w-md mx-auto text-center space-y-6">
-              <div className="w-20 h-20 bg-white rounded-3xl shadow-sm border border-nexora-border-subtle flex items-center justify-center relative">
-                <span className="font-syne font-bold text-3xl text-nexora-navy">N</span>
-                <Sparkles className="w-6 h-6 text-nexora-yellow absolute -top-2 -right-2 animate-pulse" />
+              <div className="w-20 h-20 bg-nexora-charcoal rounded-3xl shadow-sm border border-black/5 flex items-center justify-center relative p-3">
+                <img src="/owl.png" alt="Nexora AI" className="w-full h-full object-contain" />
+                <Sparkles className="w-6 h-6 text-nexora-amber absolute -top-2 -right-2 animate-pulse" />
               </div>
               <div>
-                <h3 className="font-syne font-bold text-xl text-nexora-navy mb-2">How can I assist you today?</h3>
-                <p className="text-nexora-text-secondary text-sm">I can help you analyze competitors, synthesize market data, or review your recent intelligence reports.</p>
+                <h3 className="font-syne font-bold text-xl text-nexora-charcoal mb-2">How can I assist you today?</h3>
+                <p className="text-nexora-mediumgray text-sm">I can help you analyze competitors, synthesize market data, or review your recent intelligence reports.</p>
               </div>
               
               <div className="grid grid-cols-1 gap-2 w-full mt-4">

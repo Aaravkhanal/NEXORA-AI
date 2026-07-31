@@ -1,426 +1,299 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import {
-  Brain, Building2, TrendingUp, Users, Globe, Calendar, DollarSign,
-  Shield, Zap, Newspaper, Download, Printer,
-  Code2, Target, AlertTriangle, CheckCircle,
-  MapPin, Lightbulb, Compass, AlignLeft, Sparkles, Clock, Loader2
-} from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
+import { Bookmark, Download, Link as LinkIcon, MapPin, Building2, ExternalLink, Newspaper } from 'lucide-react'
 import { 
-  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip
+  LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, 
+  XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip 
 } from 'recharts'
-import api, { API_BASE } from '@/lib/api'
-import { Card, SkeletonCard } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import ReactMarkdown from 'react-markdown'
+import api from '@/lib/api'
 
-// --- Helper Components ---
-const SectionHeader = ({ title, icon: Icon, description }: { title: string, icon: any, description?: string }) => (
-  <div className="mb-6">
-    <div className="flex items-center gap-3 mb-2">
-      <div className="p-2 bg-nexora-offwhite text-nexora-green rounded-xl border border-nexora-border-subtle shadow-sm">
-        <Icon className="w-5 h-5" />
-      </div>
-      <h2 className="text-2xl font-syne font-bold text-nexora-navy">{title}</h2>
-    </div>
-    {description && <p className="text-nexora-text-secondary text-sm">{description}</p>}
-  </div>
-);
+// Mock Data for charts if backend doesn't provide
+const mockRevenueData = [
+  { year: '2020', revenue: 274.5 },
+  { year: '2021', revenue: 365.8 },
+  { year: '2022', revenue: 394.3 },
+  { year: '2023', revenue: 383.3 },
+  { year: '2024', revenue: 390.1 },
+]
 
-export default function ReportPage() {
+const mockBusinessModel = [
+  { name: 'Hardware', value: 52, color: '#22C55E' },
+  { name: 'Services', value: 22, color: '#F97316' },
+  { name: 'Software', value: 15, color: '#FBBF24' },
+  { name: 'Other', value: 11, color: '#9CA3AF' },
+]
+
+export default function ReportDashboard() {
   const params = useParams()
-  const searchParams = useSearchParams()
   const router = useRouter()
-  
   const id = params.id as string
-  const mode = searchParams.get('mode')
 
   const [report, setReport] = useState<any>(null)
-  const [status, setStatus] = useState<any>(null)
-  const [progressEvents, setProgressEvents] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('Overview')
 
   useEffect(() => {
-    if (mode === 'view') {
-      loadReport(id)
-      return
-    }
-
-    const interval = setInterval(async () => {
+    const loadReport = async () => {
       try {
-        const data = await api.getJobStatus(id)
-        setStatus(data)
-        
-        if (data.status === 'completed' && data.report_id) {
-          clearInterval(interval)
-          loadReport(data.report_id)
-        } else if (data.status === 'failed') {
-          clearInterval(interval)
-          setError(data.error || 'Research failed')
-        }
+        const data = await api.getReport(id)
+        setReport(data)
       } catch (err) {
-        console.error(err)
+        // If not found or still processing, we might want to poll or redirect.
+        // For now, let's try polling a few times just in case it just finished.
+        try {
+          const status = await api.getJobStatus(id)
+          if (status.status !== 'completed') {
+            router.push('/') // Go back to home if not done
+          }
+        } catch (e) {
+          setError('Report not found.')
+        }
       }
-    }, 2000)
-
-    const eventSource = new EventSource(`${API_BASE}/progress/${id}`)
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      setProgressEvents(prev => {
-        if (prev.find(e => e.message === data.message)) return prev
-        return [...prev, data]
-      })
     }
-    eventSource.onerror = () => eventSource.close()
+    loadReport()
+  }, [id, router])
 
-    return () => {
-      clearInterval(interval)
-      eventSource.close()
-    }
-  }, [id, mode])
-
-  const loadReport = async (reportId: string) => {
-    try {
-      const data = await api.getReport(reportId)
-      setReport(data)
-      setStatus({ status: 'completed' })
-    } catch (err) {
-      setError('Failed to load report')
-    }
-  }
-
-  // --- Loading State ---
-  if (status?.status !== 'completed' && !report && !error) {
-    return (
-      <div className="h-full flex items-center justify-center p-6 bg-nexora-cream">
-        <div className="max-w-md w-full bg-white rounded-3xl shadow-premium border border-nexora-border-subtle overflow-hidden relative">
-          
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-nexora-offwhite">
-            <motion.div 
-              className="h-full bg-nexora-orange"
-              initial={{ width: 0 }}
-              animate={{ width: `${status?.progress || 0}%` }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-
-          <div className="p-10 text-center">
-            {/* Nexora Logo */}
-            <div className="w-20 h-20 bg-nexora-navy rounded-3xl flex items-center justify-center mx-auto mb-6 relative shadow-premium overflow-hidden group-hover:scale-105 transition-transform duration-300">
-              <img src="/owl.png" alt="Nexora Owl" className="w-16 h-16 object-contain" />
-              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-nexora-yellow animate-pulse"></div>
-            </div>
-            
-            <h2 className="text-2xl font-syne font-bold text-nexora-navy mb-2">
-              Analyzing {status?.company_name || 'Company'}
-            </h2>
-            
-            {/* Visual Stepper */}
-            <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-nexora-text-muted mb-8">
-              <span className={status?.progress > 0 ? "text-nexora-orange" : ""}>Crawling sources</span>
-              <span className="opacity-50">→</span>
-              <span className={status?.progress > 30 ? "text-nexora-orange" : ""}>Synthesizing</span>
-              <span className="opacity-50">→</span>
-              <span className={status?.progress > 80 ? "text-nexora-orange" : ""}>Building dashboard</span>
-            </div>
-            
-            <div className="bg-nexora-offwhite rounded-2xl p-4 text-left max-h-48 overflow-y-auto hide-scrollbar space-y-3 border border-nexora-border-subtle">
-              {progressEvents.map((evt, idx) => (
-                <motion.div 
-                  key={idx}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-start gap-3 text-sm text-nexora-text-secondary"
-                >
-                  <CheckCircle className="w-4 h-4 text-nexora-green shrink-0 mt-0.5" />
-                  <span className="leading-tight">{evt.message}</span>
-                </motion.div>
-              ))}
-              {progressEvents.length === 0 && (
-                <div className="text-sm text-nexora-text-muted text-center py-4 flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-nexora-orange" /> Initializing agents...
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // --- Error State ---
   if (error) {
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-nexora-cream p-6 text-center">
-        <AlertTriangle className="w-16 h-16 text-nexora-orange mb-4" />
-        <h2 className="text-3xl font-syne font-bold mb-2 text-nexora-navy">Intelligence Failure</h2>
-        <p className="text-nexora-text-secondary mb-8 max-w-md">{error}</p>
-        <button onClick={() => router.push('/')} className="px-6 py-3 bg-nexora-navy text-white rounded-xl hover:bg-nexora-navy-light transition-colors font-medium">Return to Dashboard</button>
+      <div className="flex-1 flex flex-col items-center justify-center h-full p-8 text-center">
+        <h2 className="text-2xl font-bold text-nexora-charcoal mb-2">Report Not Found</h2>
+        <p className="text-nexora-mediumgray">{error}</p>
+        <button onClick={() => router.push('/')} className="mt-4 px-6 py-2 bg-nexora-emerald text-white rounded-full font-bold">Go Home</button>
       </div>
     )
   }
 
-  if (!report) return null;
+  if (!report) {
+    return (
+      <div className="flex-1 flex items-center justify-center h-full">
+        <div className="animate-spin-slow w-12 h-12 border-4 border-nexora-emerald/20 border-t-nexora-emerald rounded-full"></div>
+      </div>
+    )
+  }
+
+  const tabs = ['Overview', 'Financials', 'Competitors', 'SWOT', 'Technology', 'News', 'Timeline', 'AI Insights']
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-8 animate-fade-in">
       
-      {/* 1. Header Area */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-4xl md:text-5xl font-syne font-bold text-nexora-navy tracking-tight">{report.company_name}</h1>
-            <Badge variant="outline" className="hidden sm:inline-flex">{report.overview?.industry || 'Technology'}</Badge>
+      {/* 1. Header */}
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-black/5 flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 bg-nexora-warmwhite rounded-2xl flex items-center justify-center shrink-0 border border-black/5 shadow-sm">
+            <span className="text-3xl font-syne font-bold text-nexora-charcoal">
+              {report.company_name.charAt(0)}
+            </span>
           </div>
-          <p className="text-lg text-nexora-text-secondary max-w-3xl">{report.ai_summary?.one_liner || report.overview?.description?.slice(0,100)}</p>
-        </div>
-        
-        <div className="flex items-center gap-3 shrink-0">
-          <a href={api.exportPdfUrl(report.id)} className="flex items-center gap-2 px-4 py-2 bg-white border border-nexora-border-subtle rounded-xl text-sm font-medium text-nexora-navy hover:border-nexora-green hover:text-nexora-green transition-colors shadow-sm">
-            <Printer className="w-4 h-4" /> Export PDF
-          </a>
-          <a href={api.exportJsonUrl(report.id)} className="flex items-center gap-2 px-4 py-2 bg-nexora-navy text-white rounded-xl text-sm font-medium hover:bg-nexora-navy-light transition-colors shadow-sm">
-            <Download className="w-4 h-4" /> Raw JSON
-          </a>
-        </div>
-      </div>
-
-      {/* 2. Executive Dashboard (Top Widgets) */}
-      <div className="grid md:grid-cols-4 gap-6">
-        
-        <Card className="md:col-span-3 bg-nexora-navy text-white border-none shadow-premium relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-nexora-green/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
-          
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-nexora-yellow" />
-              <h3 className="font-syne font-bold text-lg">AI Executive Summary</h3>
-            </div>
-            <p className="text-nexora-offwhite leading-relaxed whitespace-pre-line text-lg font-medium">
-              {report.ai_summary?.executive_summary}
-            </p>
-            
-            <div className="mt-8 flex flex-wrap gap-4">
-              {report.website && (
-                <a href={report.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition-colors border border-white/10">
-                  <Globe className="w-4 h-4" /> Official Website
-                </a>
-              )}
-              {report.overview?.headquarters && (
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl text-sm border border-white/5">
-                  <MapPin className="w-4 h-4 text-nexora-green" /> {report.overview.headquarters}
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-
-        <Card className="flex flex-col justify-between">
           <div>
-            <h3 className="font-syne font-bold text-nexora-navy mb-4 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-nexora-green" /> Health Score
-            </h3>
-            <div className="space-y-5">
-              {[
-                { label: 'Business Health', score: report.ai_summary?.scores?.business_health, color: 'bg-nexora-green' },
-                { label: 'Innovation', score: report.ai_summary?.scores?.innovation, color: 'bg-nexora-navy' },
-                { label: 'Market Position', score: report.ai_summary?.scores?.growth_potential, color: 'bg-nexora-yellow' },
-              ].map(metric => (
-                <div key={metric.label}>
-                  <div className="flex justify-between text-xs font-bold uppercase tracking-wider mb-1.5 text-nexora-text-muted">
-                    <span>{metric.label}</span>
-                    <span className="text-nexora-navy">{metric.score || 0}/100</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-nexora-offwhite rounded-full overflow-hidden">
-                    <div className={`h-full ${metric.color} rounded-full`} style={{ width: `${metric.score || 0}%` }}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* 3. Key Findings (Opportunities & Risks) */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="border-l-4 border-l-nexora-green">
-          <h3 className="flex items-center gap-2 text-nexora-green font-bold mb-4 font-syne text-lg">
-            <TrendingUp className="w-5 h-5" /> Future Opportunities
-          </h3>
-          <ul className="space-y-3">
-            {report.ai_summary?.future_opportunities?.map((opp: string, i: number) => (
-              <li key={i} className="flex gap-3 text-nexora-text-secondary text-sm">
-                <CheckCircle className="w-5 h-5 shrink-0 text-nexora-green mt-0.5" />
-                <span>{opp}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-        
-        <Card className="border-l-4 border-l-nexora-orange">
-          <h3 className="flex items-center gap-2 text-nexora-orange font-bold mb-4 font-syne text-lg">
-            <AlertTriangle className="w-5 h-5" /> Key Risks & Threats
-          </h3>
-          <ul className="space-y-3">
-            {report.ai_summary?.key_risks?.map((risk: string, i: number) => (
-              <li key={i} className="flex gap-3 text-nexora-text-secondary text-sm">
-                <Shield className="w-5 h-5 shrink-0 text-nexora-orange mt-0.5" />
-                <span>{risk}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </div>
-
-      {/* 4. Competitor Intelligence */}
-      {report.competitors && report.competitors.length > 0 && (
-        <div className="space-y-6">
-          <SectionHeader title="Competitive Intelligence" icon={Zap} description="AI-synthesized landscape and feature matrix." />
-          
-          {report.competitor_narrative && (
-            <Card className="bg-nexora-navy text-white border-none">
-              <h3 className="flex items-center gap-2 font-syne font-bold text-xl mb-4 text-white">
-                <Compass className="w-5 h-5 text-nexora-green" /> Market Narrative
-              </h3>
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <p className="text-nexora-offwhite leading-relaxed text-sm mb-4">{report.competitor_narrative.summary}</p>
-                  <p className="text-nexora-offwhite leading-relaxed text-sm">{report.competitor_narrative.competitive_dynamics}</p>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-                    <h4 className="text-nexora-green font-bold text-xs uppercase tracking-wider mb-2">Moat Analysis</h4>
-                    <p className="text-sm text-nexora-offwhite">{report.competitor_narrative.moat_analysis}</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {report.competitors.map((comp: any, i: number) => (
-              <Card key={i} className="flex flex-col">
-                <div className="mb-4">
-                  <h3 className="font-bold text-lg text-nexora-navy">{comp.name}</h3>
-                  <Badge variant="outline" className="mt-2">{comp.competitive_position || 'Competitor'}</Badge>
-                </div>
-                <p className="text-nexora-text-secondary text-sm mb-6 flex-1">{comp.overview}</p>
-                
-                <div className="bg-nexora-offwhite rounded-xl p-3 mt-auto">
-                  <h4 className="text-[10px] font-bold text-nexora-text-muted uppercase tracking-wider mb-2">Key Strength</h4>
-                  <p className="text-xs text-nexora-navy font-medium">{comp.strengths?.[0] || 'Unknown'}</p>
-                </div>
-              </Card>
-            ))}
+            <h1 className="text-3xl font-syne font-bold text-nexora-charcoal tracking-tight mb-1">{report.company_name}</h1>
+            <p className="text-sm font-medium text-nexora-mediumgray flex items-center gap-4">
+              <span className="flex items-center gap-1"><Building2 className="w-4 h-4" /> {report.overview?.industry || 'Technology'}</span>
+              <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {report.overview?.headquarters || 'Global'}</span>
+            </p>
           </div>
         </div>
-      )}
 
-      {/* 5. Business & Financials */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <SectionHeader title="Business Model" icon={Building2} />
-          <Card>
-            <div className="space-y-6">
-              <div>
-                <h4 className="font-bold text-nexora-navy mb-2">Core Operations</h4>
-                <p className="text-sm text-nexora-text-secondary leading-relaxed">{report.business_model?.core_business}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-nexora-offwhite p-4 rounded-xl">
-                  <h4 className="font-bold text-xs text-nexora-text-muted uppercase mb-1">Target Market</h4>
-                  <p className="text-sm font-medium text-nexora-navy">{report.business_model?.target_market}</p>
-                </div>
-                <div className="bg-nexora-green/20 p-4 rounded-xl">
-                  <h4 className="font-bold text-xs text-nexora-green uppercase mb-1">Revenue Streams</h4>
-                  <ul className="text-sm text-nexora-green font-medium space-y-1">
-                    {report.business_model?.revenue_streams?.slice(0,3).map((rs: string, i: number) => (
-                      <li key={i} className="line-clamp-1 flex items-center gap-1">
-                        <span className="w-1 h-1 bg-nexora-green rounded-full"></span> {rs}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
+        <div className="flex flex-wrap items-center gap-6 divide-x divide-black/5">
+          <div className="flex items-center gap-4">
+            <button className="flex items-center gap-2 px-4 py-2 border border-black/10 rounded-full text-sm font-bold text-nexora-charcoal hover:bg-nexora-warmwhite transition-colors">
+              <Bookmark className="w-4 h-4" /> Save
+            </button>
+            <button className="p-2 border border-black/10 rounded-full text-nexora-charcoal hover:bg-nexora-warmwhite transition-colors">
+              <Download className="w-4 h-4" />
+            </button>
+          </div>
 
-        <div className="space-y-6">
-          <SectionHeader title="Financial Intel" icon={DollarSign} />
-          <Card>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="p-4 border border-nexora-border-subtle rounded-xl text-center shadow-sm">
-                <h4 className="text-xs text-nexora-text-muted font-bold uppercase mb-1">Estimated Revenue</h4>
-                <p className="text-xl font-syne font-bold text-nexora-navy">{report.financials?.estimated_revenue || 'N/A'}</p>
-              </div>
-              <div className="p-4 border border-nexora-border-subtle rounded-xl text-center shadow-sm">
-                <h4 className="text-xs text-nexora-text-muted font-bold uppercase mb-1">Total Funding</h4>
-                <p className="text-xl font-syne font-bold text-nexora-green">{report.financials?.total_funding || 'N/A'}</p>
-              </div>
-            </div>
-            
+          <div className="pl-6 grid grid-cols-2 sm:grid-cols-4 gap-6">
             <div>
-              <h4 className="font-bold text-nexora-navy mb-3">Funding History</h4>
-              <div className="space-y-3">
-                {report.financials?.funding_rounds?.map((round: any, i: number) => (
-                  <div key={i} className="flex justify-between items-center p-3 bg-nexora-offwhite rounded-xl text-sm border border-transparent hover:border-nexora-border-subtle transition-colors">
-                    <span className="font-medium text-nexora-navy">{round.round}</span>
-                    <div className="text-right">
-                      <span className="block font-bold text-nexora-green">{round.amount}</span>
-                      <span className="text-xs text-nexora-text-muted">{round.date}</span>
+              <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-1">Revenue</p>
+              <p className="text-lg font-bold text-nexora-charcoal">{report.financials?.estimated_revenue || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-1">Funding</p>
+              <p className="text-lg font-bold text-nexora-charcoal">{report.financials?.total_funding || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-1">Competitors</p>
+              <p className="text-lg font-bold text-nexora-charcoal">{report.competitors?.length || 0}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div>
+                <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-1">AI Health</p>
+                <p className="text-lg font-bold text-nexora-charcoal">
+                  {report.ai_summary?.scores?.business_health || 85} <span className="text-xs text-nexora-mediumgray font-normal">/100</span>
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-full border-4 border-nexora-emerald/20 border-t-nexora-emerald"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar mb-8 border-b border-black/5 pb-2">
+        {tabs.map(tab => (
+          <button 
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 text-sm font-bold rounded-full whitespace-nowrap transition-all ${
+              activeTab === tab 
+                ? 'bg-nexora-charcoal text-white shadow-sm' 
+                : 'text-nexora-mediumgray hover:text-nexora-charcoal hover:bg-nexora-warmwhite'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* 3. Tab Content - Overview */}
+      {activeTab === 'Overview' && (
+        <div className="space-y-6">
+          
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Revenue Chart */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-black/5">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold text-nexora-charcoal">Revenue Over Time</h3>
+                <span className="text-xs font-bold px-2 py-1 bg-nexora-warmwhite rounded-md text-nexora-mediumgray">Annual</span>
+              </div>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={mockRevenueData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                    <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} dx={-10} tickFormatter={(v) => `$${v}B`} />
+                    <RechartsTooltip cursor={{ stroke: '#22C55E', strokeWidth: 1, strokeDasharray: '4 4' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                    <Line type="monotone" dataKey="revenue" stroke="#22C55E" strokeWidth={3} dot={{ r: 4, fill: '#22C55E', strokeWidth: 2, stroke: '#FFF' }} activeDot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Business Model */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-black/5">
+              <h3 className="font-bold text-nexora-charcoal mb-4">Business Model</h3>
+              <p className="text-sm text-nexora-mediumgray mb-6 leading-relaxed">
+                {report.business_model?.core_business || "Designs, manufactures, and sells premium hardware, software, and services. Revenue comes from product sales, subscriptions, and an expanding ecosystem."}
+              </p>
+              
+              <div className="flex items-center justify-between">
+                <button className="px-4 py-2 border border-black/10 rounded-full text-sm font-bold text-nexora-charcoal hover:bg-nexora-warmwhite transition-colors">
+                  View Details
+                </button>
+                
+                <div className="flex items-center gap-6">
+                  <div className="w-32 h-32">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={mockBusinessModel} innerRadius={35} outerRadius={55} paddingAngle={2} dataKey="value">
+                          {mockBusinessModel.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="space-y-2">
+                    {mockBusinessModel.map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 text-xs">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></span>
+                        <span className="font-semibold text-nexora-charcoal w-16">{item.name}</span>
+                        <span className="text-nexora-mediumgray">{item.value}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-6">
+            
+            {/* Top Competitors */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-black/5">
+              <h3 className="font-bold text-nexora-charcoal mb-6">Top Competitors</h3>
+              <div className="space-y-4">
+                {report.competitors?.slice(0, 4).map((comp: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-nexora-charcoal">{comp.name}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-24 h-1.5 bg-nexora-warmwhite rounded-full overflow-hidden">
+                        <div className="h-full bg-nexora-orange rounded-full" style={{ width: `${80 - i * 15}%` }}></div>
+                      </div>
+                      <span className="text-xs font-bold text-nexora-orange w-12 text-right">High</span>
                     </div>
                   </div>
                 ))}
               </div>
+              <button className="mt-6 px-4 py-2 border border-black/10 rounded-full text-xs font-bold text-nexora-charcoal hover:bg-nexora-warmwhite transition-colors">
+                View All
+              </button>
             </div>
-          </Card>
-        </div>
-      </div>
-      
-      {/* 6. Technical / Products */}
-      {report.products && report.products.length > 0 && (
-        <div className="space-y-6">
-          <SectionHeader title="Products & Technologies" icon={Code2} />
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {report.products.map((prod: any, i: number) => (
-              <Card key={i} className="hover:border-nexora-green transition-colors cursor-default">
-                <h4 className="font-bold text-nexora-navy mb-2">{prod.name}</h4>
-                <p className="text-sm text-nexora-text-secondary line-clamp-3">{prod.description}</p>
-              </Card>
-            ))}
+
+            {/* SWOT Summary */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-black/5">
+              <h3 className="font-bold text-nexora-charcoal mb-6">SWOT Summary</h3>
+              <div className="grid grid-cols-4 gap-2">
+                <div className="aspect-square bg-nexora-emerald/10 rounded-2xl flex flex-col items-center justify-center p-2 text-center group cursor-pointer hover:bg-nexora-emerald/20 transition-colors">
+                  <span className="text-3xl font-syne font-bold text-nexora-forest mb-1 group-hover:scale-110 transition-transform">S</span>
+                  <span className="text-[10px] font-bold text-nexora-forest uppercase">Strengths</span>
+                </div>
+                <div className="aspect-square bg-nexora-orange/10 rounded-2xl flex flex-col items-center justify-center p-2 text-center group cursor-pointer hover:bg-nexora-orange/20 transition-colors">
+                  <span className="text-3xl font-syne font-bold text-nexora-orange mb-1 group-hover:scale-110 transition-transform">W</span>
+                  <span className="text-[10px] font-bold text-nexora-orange uppercase">Weaknesses</span>
+                </div>
+                <div className="aspect-square bg-nexora-amber/10 rounded-2xl flex flex-col items-center justify-center p-2 text-center group cursor-pointer hover:bg-nexora-amber/20 transition-colors">
+                  <span className="text-3xl font-syne font-bold text-nexora-gold mb-1 group-hover:scale-110 transition-transform">O</span>
+                  <span className="text-[10px] font-bold text-nexora-gold uppercase">Opportunities</span>
+                </div>
+                <div className="aspect-square bg-rose-100 rounded-2xl flex flex-col items-center justify-center p-2 text-center group cursor-pointer hover:bg-rose-200 transition-colors">
+                  <span className="text-3xl font-syne font-bold text-rose-600 mb-1 group-hover:scale-110 transition-transform">T</span>
+                  <span className="text-[10px] font-bold text-rose-600 uppercase">Threats</span>
+                </div>
+              </div>
+              <button className="mt-6 px-4 py-2 border border-black/10 rounded-full text-xs font-bold text-nexora-charcoal hover:bg-nexora-warmwhite transition-colors">
+                View Full SWOT
+              </button>
+            </div>
+
+            {/* Latest News */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-black/5 flex flex-col">
+              <h3 className="font-bold text-nexora-charcoal mb-4">Latest News</h3>
+              <div className="space-y-4 flex-1">
+                {report.news?.slice(0, 2).map((news: any, i: number) => (
+                  <a key={i} href={news.url} target="_blank" rel="noreferrer" className="flex items-start gap-3 group">
+                    <div className="flex-1">
+                      <h4 className="text-xs font-bold text-nexora-charcoal line-clamp-2 group-hover:text-nexora-emerald transition-colors leading-tight mb-1">{news.title}</h4>
+                      <p className="text-[10px] text-nexora-mediumgray">{news.date} • {news.source}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-nexora-warmwhite rounded-lg flex items-center justify-center shrink-0 border border-black/5">
+                      <Newspaper className="w-5 h-5 text-nexora-mediumgray" />
+                    </div>
+                  </a>
+                ))}
+              </div>
+              <button className="mt-4 px-4 py-2 border border-black/10 rounded-full text-xs font-bold text-nexora-charcoal hover:bg-nexora-warmwhite transition-colors self-start">
+                View All News
+              </button>
+            </div>
+
           </div>
         </div>
       )}
-      
-      {/* 7. Recent News */}
-      {report.news && report.news.length > 0 && (
-        <div className="space-y-6 pb-24">
-          <SectionHeader title="Recent Mentions" icon={Newspaper} />
-          <div className="grid md:grid-cols-2 gap-4">
-            {report.news.map((n: any, i: number) => (
-              <a key={i} href={n.url} target="_blank" rel="noreferrer" className="block group">
-                <Card className="h-full flex flex-col justify-between group-hover:shadow-premium-hover group-hover:border-nexora-green/30 transition-all">
-                  <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <Badge variant="outline">{n.source}</Badge>
-                      <span className="text-xs text-nexora-text-muted font-medium">{n.date}</span>
-                    </div>
-                    <h4 className="font-bold text-nexora-navy group-hover:text-nexora-green transition-colors">{n.title}</h4>
-                  </div>
-                  {n.sentiment && (
-                    <Badge variant={n.sentiment.toLowerCase() === 'positive' ? 'emerald' : n.sentiment.toLowerCase() === 'negative' ? 'rose' : 'default'} className="mt-4 w-fit">
-                      {n.sentiment} Impact
-                    </Badge>
-                  )}
-                </Card>
-              </a>
-            ))}
+
+      {/* Placeholders for other tabs */}
+      {activeTab !== 'Overview' && (
+        <div className="bg-white rounded-3xl p-12 shadow-sm border border-black/5 text-center flex flex-col items-center justify-center min-h-[400px]">
+          <div className="w-20 h-20 bg-nexora-warmwhite rounded-full flex items-center justify-center mb-4 border border-black/5">
+            <img src="/owl.png" alt="Owl" className="w-10 h-10 object-contain opacity-50 grayscale" />
           </div>
+          <h3 className="text-xl font-bold text-nexora-charcoal mb-2">{activeTab} intelligence is ready</h3>
+          <p className="text-sm text-nexora-mediumgray max-w-md">
+            This module contains detailed insights regarding {activeTab.toLowerCase()}. Use the AI Assistant to query specific data points from this section.
+          </p>
         </div>
       )}
 
