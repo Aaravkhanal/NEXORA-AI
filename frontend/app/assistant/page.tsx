@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { MessageSquare, Brain, Sparkles, Send, Loader2, ArrowRight } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { motion } from 'framer-motion'
+import api from '@/lib/api'
 
 export default function AssistantPage() {
   const [chatInput, setChatInput] = useState('')
@@ -18,15 +19,18 @@ export default function AssistantPage() {
     setChatInput('')
     setIsLoading(true)
 
-    // Mock global chat response since we don't have a specific report context here yet
-    setTimeout(() => {
+    try {
+      const res = await api.sendChatMessage('global', chatInput)
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "I am the Nexora AI Assistant. Currently, I am optimized for querying specific company reports. Please search for a company on the dashboard to access deep insights, or ask me general questions about business strategy.",
-        model_used: "nexora-router"
+        content: res.answer,
+        model_used: res.model_used
       }])
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error." }])
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
 
   return (

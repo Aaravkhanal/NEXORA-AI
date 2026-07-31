@@ -64,19 +64,18 @@ export function FloatingAssistant() {
           { role: 'assistant', content: res.answer, sources: res.sources, model_used: res.model_used }
         ])
       } else {
-        // Mock response for global chat without context
-        setTimeout(() => {
-          setChatMessages(prev => [
-            ...prev,
-            { 
-              role: 'assistant', 
-              content: "I am Nexora AI. Please open a company report first so I can analyze specific data for you! Alternatively, go to the [Dedicated AI Assistant](/assistant) page.",
-              model_used: "nexora-router" 
-            }
-          ])
-          setIsChatLoading(false)
-        }, 1000)
-        return;
+        // Hit global chat endpoint
+        const res = await api.sendChatMessage('global', msg, chatSessionId || undefined)
+        setChatSessionId(res.session_id)
+        setChatMessages(prev => [
+          ...prev,
+          { 
+            role: 'assistant', 
+            content: res.answer, 
+            sources: res.sources,
+            model_used: res.model_used 
+          }
+        ])
       }
     } catch (err) {
       setChatMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error." }])

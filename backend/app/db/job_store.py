@@ -83,21 +83,19 @@ class JobStore:
             )
             await db.commit()
 
-    def get_job(self, job_id: str) -> ResearchJob | None:
-        # Sync wrapper - does a blocking read since many routes expect it
-        try:
-            loop = asyncio.get_running_loop()
-            # If in a running loop, this is tricky. We'll use a hack or just return a dummy if we must.
-            # Best is to fetch all on init into memory, or use async routes.
-            # For simplicity, we'll keep a small in-memory cache of active jobs.
-        except RuntimeError:
-            pass
-        return self._active_jobs.get(job_id)
+    async def get_job_async(self, job_id: str) -> ResearchJob | None:
+        await self.initialize()
+        async with aiosqlite.connect(self._db_path) as db:
+            async with db.execute("SELECT data FROM jobs WHERE id = ?", (job_id,)) as cursor:
+                row = await cursor.fetchone()
+                if row:
+                    try:
+                        return ResearchJob.model_validate_json(row[0])
+                    except Exception as e:
+                        logger.error("Failed to parse job JSON: %s", e)
+        return None
 
-    # Temporary in-memory cache for fast sync access by existing routes
-    _active_jobs: dict[str, ResearchJob] = {}
-
-    def update_job(
+    async def update_job_async(
         self,
         job_id: str,
         *,
@@ -107,11 +105,9 @@ class JobStore:
         report_id: str | None = None,
         error: str | None = None,
     ) -> None:
-        job = self._active_jobs.get(job_id)
+        job = await self.get_job_async(job_id)
         if not job:
-            # Create a dummy one to hold state if not found in cache
             job = ResearchJob(id=job_id, company_name="Unknown")
-            self._active_jobs[job_id] = job
             
         if status is not None:
             job.status = status
@@ -126,10 +122,6 @@ class JobStore:
         if status in (JobStatus.COMPLETED, JobStatus.FAILED):
             job.completed_at = datetime.now()
 
-        # Fire and forget async write
-        asyncio.create_task(self._async_update_job(job))
-
-    async def _async_update_job(self, job: ResearchJob) -> None:
         await self.initialize()
         async with aiosqlite.connect(self._db_path) as db:
             completed_at = job.completed_at.isoformat() if job.completed_at else None
@@ -155,19 +147,6 @@ class JobStore:
             )
             await db.commit()
 
-    def get_report(self, report_id: str) -> CompanyReport | None:
-        # We need this to be sync for the chat route, so we use a small thread pool or loop
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # We are in an async context, this is a bit of an anti-pattern but works for our shim
-                import nest_asyncio
-                nest_asyncio.apply()
-                return loop.run_until_complete(self.get_report_async(report_id))
-            return loop.run_until_complete(self.get_report_async(report_id))
-        except Exception as e:
-            logger.error("Failed to get report sync: %s", e)
-            return None
 
     async def get_report_async(self, report_id: str) -> CompanyReport | None:
         await self.initialize()

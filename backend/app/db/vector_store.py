@@ -20,12 +20,15 @@ class VectorStoreManager:
     @classmethod
     async def initialize(cls) -> None:
         os.makedirs(settings.chroma_persist_dir, exist_ok=True)
-        cls._client = await chromadb.AsyncHttpClient(
-            host="localhost", port=8001
-        ) if False else chromadb.PersistentClient(  # type: ignore[assignment]
-            path=settings.chroma_persist_dir,
-            settings=ChromaSettings(anonymized_telemetry=False),
-        )
+        if os.getenv("CHROMA_HOST"):
+            cls._client = chromadb.HttpClient(
+                host=settings.chroma_host, port=settings.chroma_port
+            )
+        else:
+            cls._client = chromadb.PersistentClient(  # type: ignore[assignment]
+                path=settings.chroma_persist_dir,
+                settings=ChromaSettings(anonymized_telemetry=False),
+            )
         logger.info("ChromaDB initialized at %s", settings.chroma_persist_dir)
 
     @classmethod

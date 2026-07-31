@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 @router.get("/progress/{job_id}")
 async def stream_progress(job_id: str) -> EventSourceResponse:
     """Server-Sent Events stream for real-time research progress."""
-    job = job_store.get_job(job_id)
+    job = await job_store.get_job_async(job_id)
     if not job:
         raise HTTPException(404, "Job not found.")
 

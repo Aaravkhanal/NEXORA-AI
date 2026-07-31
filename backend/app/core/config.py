@@ -34,7 +34,14 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     request_timeout: int = 30
     max_crawl_pages: int = 30
-    cors_origins: str = "http://localhost:3000"
+    frontend_url: str = "http://localhost:3000"
+    cors_origins: str = ""
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        if self.cors_origins:
+            return [o.strip() for o in self.cors_origins.split(",")]
+        return [self.frontend_url]
 
     # ── Multi-LLM Routing ─────────────────────────────────────────────────────
     consensus_mode: bool = False      # use 2 models + merger for high-stakes sections
@@ -42,14 +49,13 @@ class Settings(BaseSettings):
 
     # ── Vector DB ─────────────────────────────────────────────────────────────
     chroma_persist_dir: str = "./data/chroma"
+    chroma_host: str = "localhost"
+    chroma_port: int = 8001
     embedding_model: str = "models/text-embedding-004"
 
     # ── Persistence ───────────────────────────────────────────────────────────
     sqlite_db_path: str = "./data/nexus.db"
 
-    @property
-    def cors_origins_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",")]
 
     @property
     def llm_provider(self) -> str:

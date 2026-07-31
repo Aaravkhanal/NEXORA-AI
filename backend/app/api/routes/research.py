@@ -65,7 +65,7 @@ async def start_research(
 @router.get("/research/{job_id}")
 async def get_job_status(job_id: str) -> dict:
     """Get the current status of a research job."""
-    job = job_store.get_job(job_id)
+    job = await job_store.get_job_async(job_id)
     if not job:
         raise HTTPException(404, f"Job {job_id} not found.")
     return job.model_dump()

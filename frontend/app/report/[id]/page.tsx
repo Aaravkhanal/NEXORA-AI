@@ -13,7 +13,7 @@ import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip
 } from 'recharts'
-import api from '@/lib/api'
+import api, { API_BASE } from '@/lib/api'
 import { Card, SkeletonCard } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import ReactMarkdown from 'react-markdown'
@@ -67,7 +67,7 @@ export default function ReportPage() {
       }
     }, 2000)
 
-    const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/progress/${id}`)
+    const eventSource = new EventSource(`${API_BASE}/progress/${id}`)
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data)
       setProgressEvents(prev => {

@@ -22,10 +22,54 @@ logger = get_logger(__name__)
 _sessions: dict[str, ChatSession] = {}
 
 
+@router.post("/chat/global")
+async def global_chat(req: ChatRequest) -> dict:
+    """Answer a general question without a specific company report context."""
+    session_id = req.session_id or "global"
+    if session_id not in _sessions:
+        _sessions[session_id] = ChatSession(
+            id=session_id,
+            report_id="global",
+            company_name="Global Assistant",
+        )
+    session = _sessions[session_id]
+    
+    # Build conversation history
+    history = ""
+    for msg in session.messages[-6:]:
+        role = "User" if msg.role == "user" else "Assistant"
+        history += f"\n{role}: {msg.content}"
+
+    system_prompt = f"""You are the Nexora AI Global Assistant. 
+You are an expert on business strategy, market trends, and competitive analysis.
+Answer the user's question directly and professionally.
+
+Conversation History:
+{history if history else '(none)'}"""
+
+    try:
+        logger.info("🤖 Global Chat: Generating answer...")
+        answer, model_used = await multi_llm_invoke(system_prompt, req.message, role="polisher")
+    except Exception as exc:
+        logger.error("Global Chat failed: %s", exc)
+        raise HTTPException(500, f"AI chat failed: {exc}") from exc
+
+    user_msg = ChatMessage(role="user", content=req.message)
+    assistant_msg = ChatMessage(role="assistant", content=answer, sources=[], model_used=model_used)
+    session.messages.extend([user_msg, assistant_msg])
+
+    return {
+        "session_id": session_id,
+        "answer": answer,
+        "sources": [],
+        "message_count": len(session.messages),
+        "model_used": model_used,
+    }
+
 @router.post("/chat/{report_id}")
 async def chat(report_id: str, req: ChatRequest) -> dict:
     """Answer a question about a company using RAG."""
-    report = job_store.get_report(report_id)
+    report = await job_store.get_report_async(report_id)
     if not report:
         raise HTTPException(404, "Report not found. Generate a report first.")
 

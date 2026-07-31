@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="logo.png" alt="Nexora AI Logo" width="250"/>
+  <img src="ChatGPT%20Image%20Jul%2031%2C%202026%20at%2011_29_09%20AM.png" alt="Nexora AI Logo" width="250"/>
   <h1>🦉 Nexora AI</h1>
   <p><strong>AI-Powered Company Intelligence & Strategic Decision Platform</strong></p>
 </div>
@@ -87,8 +87,6 @@ cp .env.example .env.local
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-> **Note on Logo**: Please place the `logo.png` file in the root directory of the repository so it displays correctly in this README!
 
 ---
 
