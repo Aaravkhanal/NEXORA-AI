@@ -111,7 +111,7 @@ export default function ReportPage() {
           <div className="p-10 text-center">
             {/* Nexora Logo */}
             <div className="w-20 h-20 bg-nexora-navy rounded-3xl flex items-center justify-center mx-auto mb-6 relative shadow-premium overflow-hidden group-hover:scale-105 transition-transform duration-300">
-              <img src="/logo.png" alt="Nexora Logo" className="w-16 h-16 object-contain" />
+              <img src="/owl.png" alt="Nexora Owl" className="w-16 h-16 object-contain" />
               <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-nexora-yellow animate-pulse"></div>
             </div>
             
