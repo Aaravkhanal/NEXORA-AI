@@ -77,8 +77,12 @@ export function FloatingAssistant() {
           }
         ])
       }
-    } catch (err) {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error." }])
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: "Please wait for the report to finish generating before asking questions." }])
+      } else {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error." }])
+      }
     } finally {
       setIsChatLoading(false)
     }

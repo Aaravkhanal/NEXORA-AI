@@ -16,7 +16,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     <div className="flex h-screen overflow-hidden bg-nexora-cream text-nexora-charcoal selection:bg-nexora-emerald/20 selection:text-nexora-forest">
       <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
       
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-64 bg-nexora-cream transition-all duration-300 ease-in-out h-full overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 bg-nexora-cream transition-all duration-300 ease-in-out h-full overflow-hidden">
         <TopNav toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <main className="flex-1 overflow-y-auto hide-scrollbar">
           {children}
