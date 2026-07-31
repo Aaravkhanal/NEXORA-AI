@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Nexora Colors */
+  --bg-primary: #FAFAFA;
+  --bg-secondary: #F3F4F6;
+  --text-primary: #1A2128;
+  --text-secondary: #4B5563;
+  --text-muted: #9CA3AF;
+  
+  --border-subtle: #E5E7EB;
+  --border-active: #10B981;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+/* Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Hide scrollbar for clean UI elements but allow scrolling */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Shimmer Skeleton */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #F3F4F6 0%, #E5E7EB 50%, #F3F4F6 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: 8px;
+}
+
+/* Prose overrides for markdown */
+.prose-nexora {
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+.prose-nexora h1, .prose-nexora h2, .prose-nexora h3, .prose-nexora h4 {
+  color: var(--text-primary);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+}
+.prose-nexora a {
+  color: #10B981;
+  text-decoration: none;
+  font-weight: 500;
+}
+.prose-nexora a:hover {
+  text-decoration: underline;
+}
+
+/* Chat bubble */
+.chat-bubble-user {
+  background-color: #1A2128;
+  color: white;
+  border-radius: 16px 16px 4px 16px;
+}
+.chat-bubble-ai {
+  background-color: white;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Progress bar animated stripe */
+.progress-bar-striped {
+  background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
+  background-size: 1rem 1rem;
+}

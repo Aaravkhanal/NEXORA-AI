@@ -1,0 +1,29 @@
+import React from 'react'
+
+type BadgeVariant = 'emerald' | 'amber' | 'rose' | 'charcoal' | 'outline' | 'gold' | 'default'
+
+interface BadgeProps {
+  children: React.ReactNode
+  variant?: BadgeVariant
+  icon?: React.ReactNode
+  className?: string
+}
+
+export function Badge({ children, variant = 'default', icon, className = '' }: BadgeProps) {
+  const variants = {
+    emerald: 'bg-nexora-warmGreen text-nexora-forest border-nexora-emerald/20',
+    amber: 'bg-nexora-softOrange text-nexora-orange border-nexora-orange/20',
+    gold: 'bg-nexora-gold/10 text-nexora-gold border-nexora-gold/20',
+    rose: 'bg-rose-50 text-rose-700 border-rose-200',
+    charcoal: 'bg-nexora-charcoal text-white border-nexora-charcoal',
+    outline: 'bg-transparent text-nexora-charcoalLight border-nexora-offwhite hover:bg-nexora-offwhite',
+    default: 'bg-nexora-offwhite text-nexora-charcoalLight border-nexora-subtle'
+  }
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border transition-colors ${variants[variant]} ${className}`}>
+      {icon && <span className="opacity-70">{icon}</span>}
+      {children}
+    </span>
+  )
+}

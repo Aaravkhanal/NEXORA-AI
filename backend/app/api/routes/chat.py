@@ -1,0 +1,150 @@
+"""POST /api/chat/{report_id} — RAG-powered company chatbot."""
+from __future__ import annotations
+
+import json
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
+
+from app.core.logging import get_logger
+from app.db.job_store import job_store
+from app.models.schemas import (
+    ChatMessage,
+    ChatRequest,
+    ChatSession,
+    SourceRef,
+)
+from app.services.ai.multi_llm import multi_llm_invoke
+
+router = APIRouter(tags=["chat"])
+logger = get_logger(__name__)
+
+# In-memory session store (we'll keep sessions in memory for now)
+_sessions: dict[str, ChatSession] = {}
+
+
+@router.post("/chat/{report_id}")
+async def chat(report_id: str, req: ChatRequest) -> dict:
+    """Answer a question about a company using RAG."""
+    report = job_store.get_report(report_id)
+    if not report:
+        raise HTTPException(404, "Report not found. Generate a report first.")
+
+    # Get or create session
+    session_id = req.session_id or report_id
+    if session_id not in _sessions:
+        _sessions[session_id] = ChatSession(
+            id=session_id,
+            report_id=report_id,
+            company_name=report.company_name,
+        )
+    session = _sessions[session_id]
+
+    # Search knowledge base (using ChromaDB through rag_engine)
+    from app.services.ai.rag_engine import search_knowledge_base
+    relevant_docs = search_knowledge_base(report_id, req.message, n_results=5)
+
+    # Build context from retrieved docs
+    context_parts: list[str] = []
+    source_refs: list[SourceRef] = []
+
+    if relevant_docs:
+        context_parts.append("=== Relevant Information ===")
+        for doc in relevant_docs:
+            context_parts.append(f"\nFrom {doc['title']} ({doc['url']}):\n{doc['text']}")
+            if doc.get("url"):
+                source_refs.append(
+                    SourceRef(
+                        source=doc.get("source", "web"),
+                        url=doc["url"],
+                        confidence="medium",  # type: ignore[arg-type]
+                    )
+                )
+
+    # Also add key report sections as context
+    if report.overview.description:
+        context_parts.append(f"\n=== Company Overview ===\n{report.overview.description}")
+    if report.ai_summary.executive_summary:
+        context_parts.append(f"\n=== Executive Summary ===\n{report.ai_summary.executive_summary}")
+
+    # Build conversation history
+    history = ""
+    for msg in session.messages[-6:]:  # last 3 turns
+        role = "User" if msg.role == "user" else "Assistant"
+        history += f"\n{role}: {msg.content}"
+
+    full_context = "\n".join(context_parts)
+
+    # ── Multi-Agent Team Configuration ──
+    analyst_prompt = f"""You are the Lead Research Analyst specializing in {report.company_name}.
+Your job is to analyze the context and history to write a detailed, data-rich draft response to the user's question.
+Focus on specific facts, numbers, and dates. Do not speculate or generalize."""
+
+    critic_prompt = f"""You are the QC Fact Checker and Critic.
+Review the Lead Analyst's draft. Check it strictly against the retrieved context.
+Point out:
+1. Any unsupported claims or hallucinations.
+2. Important missing context/details.
+3. Logical flow or tone issues.
+Be concise but thorough."""
+
+    polisher_prompt = f"""You are the Editor in Chief.
+Synthesize the Analyst's draft and the Critic's feedback into the final response for the user.
+Ensure every claim is verified, correct any errors highlighted by the Critic, and write a polished, well-structured answer in markdown. Only return the final polished answer."""
+
+    user_prompt = f"""Context:
+{full_context}
+
+Conversation History:
+{history if history else '(none)'}
+
+User Question: {req.message}"""
+
+    try:
+        logger.info("🤖 Multi-Agent Chat: Analyst generating draft...")
+        draft, _ = await multi_llm_invoke(analyst_prompt, user_prompt, role="analyst")
+        
+        logger.info("🕵️ Multi-Agent Chat: Critic reviewing draft...")
+        critic_input = f"Context:\n{full_context}\n\nDraft:\n{draft}\n\nUser Question: {req.message}"
+        review, _ = await multi_llm_invoke(critic_prompt, critic_input, role="critic")
+        
+        logger.info("✍️ Multi-Agent Chat: Polisher generating final answer...")
+        polisher_input = f"Draft:\n{draft}\n\nCritic Feedback:\n{review}\n\nUser Question: {req.message}"
+        answer, model_used = await multi_llm_invoke(polisher_prompt, polisher_input, role="polisher")
+    except Exception as exc:
+        logger.error("Chat multi-agent flow failed: %s", exc)
+        raise HTTPException(500, f"AI chat failed: {exc}") from exc
+
+    # Store in session
+    user_msg = ChatMessage(role="user", content=req.message)
+    assistant_msg = ChatMessage(role="assistant", content=answer, sources=source_refs, model_used=model_used)
+    session.messages.extend([user_msg, assistant_msg])
+
+    return {
+        "session_id": session_id,
+        "answer": answer,
+        "sources": [s.model_dump() for s in source_refs],
+        "message_count": len(session.messages),
+        "model_used": model_used,
+    }
+
+
+@router.get("/chat/{report_id}/history")
+async def get_chat_history(report_id: str, session_id: str | None = None) -> dict:
+    """Get conversation history for a session."""
+    sid = session_id or report_id
+    session = _sessions.get(sid)
+    if not session:
+        return {"session_id": sid, "messages": [], "message_count": 0}
+    return {
+        "session_id": sid,
+        "company_name": session.company_name,
+        "messages": [m.model_dump() for m in session.messages],
+        "message_count": len(session.messages),
+    }
+
+
+@router.delete("/chat/{report_id}/history")
+async def clear_chat_history(report_id: str) -> dict:
+    """Clear conversation history."""
+    _sessions.pop(report_id, None)
+    return {"status": "cleared"}
