@@ -55,14 +55,7 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
         {/* Logo area */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-nexora-border-subtle shrink-0">
           <Link href="/" className="flex items-center gap-2 group">
-            {/* Nexora Owl Icon Placeholder */}
-            <div className="w-8 h-8 rounded-lg bg-nexora-navy flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform">
-              <span className="text-white font-syne font-bold">N</span>
-              <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-nexora-yellow animate-pulse"></div>
-            </div>
-            <span className="font-syne font-bold text-xl text-nexora-navy tracking-tight">
-              Nexora
-            </span>
+            <img src="/logo.png" alt="Nexora Logo" className="h-10 object-contain group-hover:scale-105 transition-transform" />
           </Link>
           <button onClick={closeSidebar} className="lg:hidden p-1 text-nexora-text-muted hover:text-nexora-navy rounded-md">
             <X className="w-5 h-5" />

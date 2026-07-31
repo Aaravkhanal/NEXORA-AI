@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="ChatGPT%20Image%20Jul%2031%2C%202026%20at%2011_29_09%20AM.png" alt="Nexora AI Logo" width="250"/>
+  <img src="logo.png" alt="Nexora AI Logo" width="250"/>
   <h1>🦉 Nexora AI</h1>
   <p><strong>AI-Powered Company Intelligence & Strategic Decision Platform</strong></p>
 </div>

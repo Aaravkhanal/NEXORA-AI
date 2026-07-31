@@ -16,7 +16,7 @@ export function TopNav({ toggleSidebar }: { toggleSidebar: () => void }) {
           <Menu className="w-5 h-5" />
         </button>
         
-        <div className="hidden md:block max-w-md w-full ml-4 lg:ml-0">
+        <div className="hidden md:block max-w-md w-full ml-4 lg:ml-6">
           <SearchInput />
         </div>
       </div>

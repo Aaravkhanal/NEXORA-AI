@@ -51,7 +51,7 @@ async def start_research(
     _active_jobs_per_ip[client_ip] = _active_jobs_per_ip.get(client_ip, 0) + 1
 
     # Trigger via BackgroundTasks instead of Celery since local user doesn't have Redis
-    background_tasks.add_task(run_research_pipeline, job.id)
+    background_tasks.add_task(run_research_pipeline, job)
 
     # Clean up rate limit state after some time or just let it reset (for simplicity here, 
     # we'll use a fire-and-forget task to decrement it after 5 minutes since we don't have
