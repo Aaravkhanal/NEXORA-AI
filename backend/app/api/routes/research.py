@@ -46,17 +46,21 @@ async def start_research(
         company_name=company_name or website,
         website=website,
     )
-    job_store.create_job(job)
+    # Save to DB first so Celery can find it
+    await job_store.create_job_async(job)
     _active_jobs_per_ip[client_ip] = _active_jobs_per_ip.get(client_ip, 0) + 1
 
-    # Wrapper to handle rate limit cleanup
-    async def _run_and_cleanup() -> None:
-        try:
-            await run_research_pipeline(job)
-        finally:
-            _active_jobs_per_ip[client_ip] = max(0, _active_jobs_per_ip.get(client_ip, 1) - 1)
+    # Trigger Celery task
+    from app.worker import execute_research_job
+    execute_research_job.delay(job.id)
 
-    background_tasks.add_task(_run_and_cleanup)
+    # Clean up rate limit state after some time or just let it reset (for simplicity here, 
+    # we'll use a fire-and-forget task to decrement it after 5 minutes since we don't have
+    # the exact completion hook in this process easily without redis pub/sub listening for it)
+    async def cleanup_ip_limit():
+        await asyncio.sleep(300)
+        _active_jobs_per_ip[client_ip] = max(0, _active_jobs_per_ip.get(client_ip, 1) - 1)
+    background_tasks.add_task(cleanup_ip_limit)
 
     logger.info("Started research job %s for '%s' (IP: %s)", job.id, job.company_name, client_ip)
     return {"job_id": job.id, "status": job.status}

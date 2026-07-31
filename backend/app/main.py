@@ -55,12 +55,14 @@ async def global_exception_handler(request, exc):
 
 
 # Register routes
-from app.api.routes import chat, progress, report, research
+from app.api.routes import chat, progress, report, research, auth, billing
 
 app.include_router(research.router, prefix="/api")
 app.include_router(progress.router, prefix="/api")
 app.include_router(report.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
+app.include_router(billing.router, prefix="/api")
 
 # We will add compare router here too if created.
 

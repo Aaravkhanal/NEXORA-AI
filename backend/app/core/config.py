@@ -53,8 +53,12 @@ class Settings(BaseSettings):
     chroma_port: int = 8001
     embedding_model: str = "models/text-embedding-004"
 
-    # ── Persistence ───────────────────────────────────────────────────────────
-    sqlite_db_path: str = "./data/nexus.db"
+    # ── Persistence & Queue ───────────────────────────────────────────────────
+    sqlite_db_path: str = "./data/nexus.db"  # Deprecated in favor of Postgres
+    database_url: str = "postgresql+asyncpg://nexora:password@localhost:5432/nexora"
+    redis_url: str = "redis://localhost:6379/0"
+    celery_broker_url: str = "redis://localhost:6379/0"
+    celery_result_backend: str = "redis://localhost:6379/0"
 
 
     @property
