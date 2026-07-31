@@ -186,15 +186,28 @@ class JobStore:
 
     async def emit_progress(self, event: ProgressEvent) -> None:
         await self.initialize()
+        if not self._redis_client:
+            return
         channel = f"job_progress:{event.job_id}"
-        await self._redis_client.publish(channel, event.model_dump_json())
+        try:
+            await self._redis_client.publish(channel, event.model_dump_json())
+        except Exception as e:
+            logger.warning(f"Failed to emit progress (Redis down?): {e}")
 
     async def subscribe_progress(self, job_id: str) -> AsyncIterator[ProgressEvent]:
         await self.initialize()
+        if not self._redis_client:
+            yield ProgressEvent(job_id=job_id, step="Error", message="Real-time progress unavailable (Redis disconnected)", progress=100, status="failed", timestamp=datetime.utcnow().isoformat())
+            return
+            
         channel = f"job_progress:{job_id}"
-        pubsub = self._redis_client.pubsub()
-        await pubsub.subscribe(channel)
-        
+        try:
+            pubsub = self._redis_client.pubsub()
+            await pubsub.subscribe(channel)
+        except Exception as e:
+            logger.warning(f"Failed to subscribe progress (Redis down?): {e}")
+            return
+            
         try:
             async for message in pubsub.listen():
                 if message["type"] == "message":
@@ -202,12 +215,19 @@ class JobStore:
                     if data == "DONE":
                         break
                     yield ProgressEvent.model_validate_json(data)
+        except Exception:
+            pass
         finally:
             await pubsub.unsubscribe(channel)
 
     async def close_progress(self, job_id: str) -> None:
         await self.initialize()
+        if not self._redis_client:
+            return
         channel = f"job_progress:{job_id}"
-        await self._redis_client.publish(channel, "DONE")
+        try:
+            await self._redis_client.publish(channel, "DONE")
+        except Exception:
+            pass
 
 job_store = JobStore()

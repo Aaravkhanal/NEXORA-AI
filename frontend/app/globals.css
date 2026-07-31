@@ -1,9 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@400;600;700;800&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@source "../app";
+@source "../components";
 
+@theme {
+  --color-nexora-charcoal: #1A2128;
+  --color-nexora-charcoal-light: #2C3540;
+  --color-nexora-cream: #FAFAFA;
+  --color-nexora-offwhite: #F3F4F6;
+  --color-nexora-emerald: #10B981;
+  --color-nexora-forest: #047857;
+  
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Syne", system-ui, sans-serif;
+}
 :root {
   /* Nexora Colors */
   --bg-primary: #FAFAFA;

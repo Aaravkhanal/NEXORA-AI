@@ -46,13 +46,12 @@ async def start_research(
         company_name=company_name or website,
         website=website,
     )
-    # Save to DB first so Celery can find it
+    # Save to DB first so we can track it
     await job_store.create_job_async(job)
     _active_jobs_per_ip[client_ip] = _active_jobs_per_ip.get(client_ip, 0) + 1
 
-    # Trigger Celery task
-    from app.worker import execute_research_job
-    execute_research_job.delay(job.id)
+    # Trigger via BackgroundTasks instead of Celery since local user doesn't have Redis
+    background_tasks.add_task(run_research_pipeline, job.id)
 
     # Clean up rate limit state after some time or just let it reset (for simplicity here, 
     # we'll use a fire-and-forget task to decrement it after 5 minutes since we don't have

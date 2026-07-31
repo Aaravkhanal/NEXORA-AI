@@ -54,8 +54,8 @@ class Settings(BaseSettings):
     embedding_model: str = "models/text-embedding-004"
 
     # ── Persistence & Queue ───────────────────────────────────────────────────
-    sqlite_db_path: str = "./data/nexus.db"  # Deprecated in favor of Postgres
-    database_url: str = "postgresql+asyncpg://nexora:password@localhost:5432/nexora"
+    sqlite_db_path: str = "./data/nexus.db"
+    database_url: str = "sqlite+aiosqlite:///./data/nexus.db"
     redis_url: str = "redis://localhost:6379/0"
     celery_broker_url: str = "redis://localhost:6379/0"
     celery_result_backend: str = "redis://localhost:6379/0"
