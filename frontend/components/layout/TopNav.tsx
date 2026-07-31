@@ -4,7 +4,6 @@ import React from 'react'
 import Link from 'next/link'
 import { Bell, HelpCircle, UserCircle, Menu } from 'lucide-react'
 import { SearchInput } from '@/components/ui/SearchInput'
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 
 export function TopNav({ toggleSidebar }: { toggleSidebar: () => void }) {
   return (
@@ -32,16 +31,9 @@ export function TopNav({ toggleSidebar }: { toggleSidebar: () => void }) {
         </button>
         <div className="w-px h-6 bg-nexora-border-subtle mx-1 hidden sm:block"></div>
         <div className="flex items-center gap-2">
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="text-sm font-medium text-white bg-nexora-charcoal px-4 py-2 rounded-lg hover:bg-nexora-charcoalLight transition-colors">
-                Sign In
-              </button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <UserButton appearance={{ elements: { userButtonAvatarBox: 'w-8 h-8' } }} />
-          </SignedIn>
+          <button className="flex items-center gap-2 p-1.5 hover:bg-nexora-offwhite rounded-full transition-colors">
+            <UserCircle className="w-7 h-7 text-nexora-text-secondary" />
+          </button>
         </div>
       </div>
     </header>

@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { FloatingAssistant } from '@/components/chat/FloatingAssistant'
 import LayoutWrapper from '@/components/layout/LayoutWrapper'
-import { ClerkProvider } from '@clerk/nextjs'
 
 export const metadata: Metadata = {
   title: 'Nexora AI | Executive Intelligence',
@@ -22,15 +21,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en" className="h-full antialiased selection:bg-nexora-emerald/20 selection:text-nexora-forest">
-        <body className="h-full bg-nexora-cream text-nexora-charcoal font-sans">
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
-          <FloatingAssistant />
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" className="h-full antialiased selection:bg-nexora-emerald/20 selection:text-nexora-forest">
+      <body className="h-full bg-nexora-cream text-nexora-charcoal font-sans">
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
+        <FloatingAssistant />
+      </body>
+    </html>
   )
 }

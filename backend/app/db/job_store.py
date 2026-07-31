@@ -53,7 +53,7 @@ class JobStore:
                 progress=job.progress,
                 current_step=job.current_step,
                 created_at=job.created_at,
-                data=job.model_dump()
+                data=job.model_dump(mode='json')
             )
             session.add(job_model)
             await session.commit()
@@ -136,7 +136,7 @@ class JobStore:
                 company_name=report.company_name,
                 website=report.website,
                 generated_at=report.generated_at,
-                data=report.model_dump()
+                data=report.model_dump(mode='json')
             )
             await session.merge(report_model)
             await session.commit()
