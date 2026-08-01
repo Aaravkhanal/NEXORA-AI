@@ -3,10 +3,17 @@ Multi-LLM Router — Supports Gemini, NVIDIA (OpenAI-compatible), Groq, OpenRout
 
 Priority chain: Gemini → NVIDIA Gemma → NVIDIA GLM → Groq → fallback
 Each agent in the chat pipeline can be assigned a different model for diversity.
+
+FIXES:
+- Updated Groq model from decommissioned llama-3.1-70b-versatile to llama-3.3-70b-versatile
+- Added global semaphore to cap concurrent API calls (avoids 429 rate limits)
+- Added per-call asyncio timeout (90s) to prevent hanging forever
+- Added jitter on retry backoff
 """
 from __future__ import annotations
 
 import asyncio
+import random
 from enum import Enum
 from typing import Any
 
@@ -17,6 +24,10 @@ from app.core.config import settings
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
+
+# Global semaphore — cap total concurrent LLM calls across all pipeline stages
+# This prevents 429 rate limits on shared API quotas
+_LLM_SEMAPHORE = asyncio.Semaphore(4)
 
 
 class LLMProvider(str, Enum):
@@ -37,10 +48,11 @@ def _make_gemini(temperature: float = 0.2) -> BaseChatModel | None:
     try:
         from langchain_google_genai import ChatGoogleGenerativeAI
         return ChatGoogleGenerativeAI(
-            model="gemini-1.5-pro",
+            model="gemini-2.0-flash",
             google_api_key=settings.gemini_api_key,
             temperature=temperature,
             convert_system_message_to_human=True,
+            max_retries=0,  # We handle retries ourselves to avoid 32s hangs
         )
     except Exception as e:
         logger.warning("Gemini init failed: %s", e)
@@ -59,6 +71,7 @@ def _make_nvidia(model_name: str, temperature: float = 0.2) -> BaseChatModel | N
             api_key=settings.openai_api_key,
             base_url=settings.openai_api_base,
             temperature=temperature,
+            max_tokens=4096,
         )
     except Exception as e:
         logger.warning("NVIDIA %s init failed: %s", model_name, e)
@@ -71,9 +84,11 @@ def _make_groq(temperature: float = 0.2) -> BaseChatModel | None:
     try:
         from langchain_groq import ChatGroq
         return ChatGroq(
-            model="llama-3.1-70b-versatile",
+            # FIX: llama-3.1-70b-versatile was decommissioned; use the current model
+            model="llama-3.3-70b-versatile",
             api_key=settings.groq_api_key,
             temperature=temperature,
+            max_tokens=4096,
         )
     except Exception as e:
         logger.warning("Groq init failed: %s", e)
@@ -149,10 +164,10 @@ def get_model_by_role(role: str = "default", temperature: float = 0.2) -> tuple[
     name_to_model = dict(chain)
     
     role_preference = {
-        "analyst": ["gemini", "groq", "nvidia_gemma", "nvidia_glm", "openrouter", "ollama"],
-        "critic":  ["nvidia_glm", "groq", "nvidia_gemma", "gemini", "openrouter", "ollama"],
-        "polisher": ["nvidia_gemma", "gemini", "groq", "nvidia_glm", "openrouter", "ollama"],
-        "default": [name for name, _ in chain],
+        "analyst": ["nvidia_gemma", "groq", "gemini", "nvidia_glm", "openrouter", "ollama"],
+        "critic":  ["nvidia_gemma", "groq", "nvidia_glm", "gemini", "openrouter", "ollama"],
+        "polisher": ["nvidia_gemma", "groq", "gemini", "nvidia_glm", "openrouter", "ollama"],
+        "default": ["nvidia_gemma", "groq", "gemini", "nvidia_glm", "openrouter", "ollama"],
     }
     
     for preferred in role_preference.get(role, role_preference["default"]):
@@ -170,9 +185,11 @@ async def multi_llm_invoke(
     role: str = "default",
     temperature: float = 0.2,
     retries: int = 2,
+    call_timeout: float = 90.0,
 ) -> tuple[str, str]:
     """
     Invoke LLM with role-based routing and automatic fallback chain.
+    Uses global semaphore to limit concurrent calls and avoid 429 rate limits.
     
     Returns (response_text, model_name_used).
     """
@@ -181,14 +198,13 @@ async def multi_llm_invoke(
 
     # Role-based preferred model first
     role_preferences = {
-        "analyst": ["gemini", "groq", "nvidia_gemma", "nvidia_glm", "openrouter", "ollama"],
-        "critic":  ["nvidia_glm", "groq", "nvidia_gemma", "gemini", "openrouter", "ollama"],
-        "polisher": ["nvidia_gemma", "gemini", "groq", "nvidia_glm", "openrouter", "ollama"],
-        "default": [name for name, _ in chain],
+        "analyst": ["nvidia_gemma", "groq", "gemini", "nvidia_glm", "openrouter", "ollama"],
+        "critic":  ["nvidia_gemma", "groq", "nvidia_glm", "gemini", "openrouter", "ollama"],
+        "polisher": ["nvidia_gemma", "groq", "gemini", "nvidia_glm", "openrouter", "ollama"],
+        "default": ["nvidia_gemma", "groq", "gemini", "nvidia_glm", "openrouter", "ollama"],
     }
     
     ordered_names = role_preferences.get(role, role_preferences["default"])
-    # Filter to only available models, then append any remaining
     available_names = [n for n in ordered_names if n in name_to_model]
     remaining = [n for n, _ in chain if n not in available_names]
     ordered_models = [(n, name_to_model[n]) for n in (available_names + remaining)]
@@ -203,17 +219,32 @@ async def multi_llm_invoke(
         for attempt in range(retries):
             try:
                 logger.debug("Trying %s (attempt %d, role=%s)", attempt_name, attempt + 1, role)
-                result = await model.ainvoke(messages)
+                # Acquire semaphore to cap concurrent calls
+                async with _LLM_SEMAPHORE:
+                    result = await asyncio.wait_for(
+                        model.ainvoke(messages),
+                        timeout=call_timeout,
+                    )
                 text = str(result.content).strip()
                 if text:
                     if attempt_name != (ordered_models[0][0] if ordered_models else ""):
                         logger.info("Fell back to %s for role=%s", attempt_name, role)
                     return text, attempt_name
+            except asyncio.TimeoutError:
+                last_error = TimeoutError(f"LLM call to {attempt_name} timed out after {call_timeout}s")
+                logger.warning("LLM %s timed out (attempt %d)", attempt_name, attempt + 1)
             except Exception as e:
                 last_error = e
+                # Check if it's a decommissioned/permanent error — don't retry
+                err_str = str(e).lower()
+                if "decommissioned" in err_str or "model_not_found" in err_str:
+                    logger.error("LLM %s permanently unavailable: %s", attempt_name, e)
+                    break  # Try next model immediately
                 logger.warning("LLM %s failed (attempt %d): %s", attempt_name, attempt + 1, e)
                 if attempt < retries - 1:
-                    await asyncio.sleep(0.5 * (attempt + 1))
+                    # Exponential backoff with jitter
+                    wait = (1.0 * (attempt + 1)) + random.uniform(0, 0.5)
+                    await asyncio.sleep(wait)
     
     raise RuntimeError(f"All LLM providers failed. Last error: {last_error}")
 
@@ -241,8 +272,8 @@ async def consensus_invoke(
     
     try:
         results = await asyncio.gather(
-            model_a.ainvoke(messages),
-            model_b.ainvoke(messages),
+            asyncio.wait_for(model_a.ainvoke(messages), timeout=90.0),
+            asyncio.wait_for(model_b.ainvoke(messages), timeout=90.0),
             return_exceptions=True,
         )
         
@@ -302,6 +333,7 @@ def get_embeddings() -> Any:
             _embeddings_singleton = GoogleGenerativeAIEmbeddings(
                 model=settings.embedding_model,
                 google_api_key=settings.gemini_api_key,
+                max_retries=0,
             )
             logger.info("Using Gemini embeddings (%s)", settings.embedding_model)
             return _embeddings_singleton

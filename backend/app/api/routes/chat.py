@@ -49,7 +49,7 @@ Conversation History:
 
     try:
         logger.info("🤖 Global Chat: Generating answer...")
-        answer, model_used = await multi_llm_invoke(system_prompt, req.message, role="polisher")
+        answer, model_used = await multi_llm_invoke(system_prompt, req.message, role="polisher", temperature=0.0)
     except Exception as exc:
         logger.error("Global Chat failed: %s", exc)
         raise HTTPException(500, f"AI chat failed: {exc}") from exc
@@ -121,19 +121,21 @@ async def chat(report_id: str, req: ChatRequest) -> dict:
     # ── Multi-Agent Team Configuration ──
     analyst_prompt = f"""You are the Lead Research Analyst specializing in {report.company_name}.
 Your job is to analyze the context and history to write a detailed, data-rich draft response to the user's question.
-Focus on specific facts, numbers, and dates. Do not speculate or generalize."""
+Focus on specific facts, numbers, and dates. Do not speculate or generalize.
+CRITICAL RULE: If the retrieved context does not contain the answer, explicitly state that you do not have enough information rather than making something up."""
 
     critic_prompt = f"""You are the QC Fact Checker and Critic.
 Review the Lead Analyst's draft. Check it strictly against the retrieved context.
 Point out:
-1. Any unsupported claims or hallucinations.
+1. Any unsupported claims, fabricated numbers, or hallucinations.
 2. Important missing context/details.
 3. Logical flow or tone issues.
 Be concise but thorough."""
 
     polisher_prompt = f"""You are the Editor in Chief.
 Synthesize the Analyst's draft and the Critic's feedback into the final response for the user.
-Ensure every claim is verified, correct any errors highlighted by the Critic, and write a polished, well-structured answer in markdown. Only return the final polished answer."""
+Ensure every claim is verified, correct any errors highlighted by the Critic, and write a polished, well-structured answer in markdown.
+CRITICAL RULE: DO NOT hallucinate or invent facts. If the information is not in the context, say so. Only return the final polished answer."""
 
     user_prompt = f"""Context:
 {full_context}
@@ -145,15 +147,15 @@ User Question: {req.message}"""
 
     try:
         logger.info("🤖 Multi-Agent Chat: Analyst generating draft...")
-        draft, _ = await multi_llm_invoke(analyst_prompt, user_prompt, role="analyst")
+        draft, _ = await multi_llm_invoke(analyst_prompt, user_prompt, role="analyst", temperature=0.0)
         
         logger.info("🕵️ Multi-Agent Chat: Critic reviewing draft...")
         critic_input = f"Context:\n{full_context}\n\nDraft:\n{draft}\n\nUser Question: {req.message}"
-        review, _ = await multi_llm_invoke(critic_prompt, critic_input, role="critic")
+        review, _ = await multi_llm_invoke(critic_prompt, critic_input, role="critic", temperature=0.0)
         
         logger.info("✍️ Multi-Agent Chat: Polisher generating final answer...")
         polisher_input = f"Draft:\n{draft}\n\nCritic Feedback:\n{review}\n\nUser Question: {req.message}"
-        answer, model_used = await multi_llm_invoke(polisher_prompt, polisher_input, role="polisher")
+        answer, model_used = await multi_llm_invoke(polisher_prompt, polisher_input, role="polisher", temperature=0.0)
     except Exception as exc:
         logger.error("Chat multi-agent flow failed: %s", exc)
         raise HTTPException(500, f"AI chat failed: {exc}") from exc

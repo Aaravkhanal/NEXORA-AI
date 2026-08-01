@@ -11,9 +11,8 @@ from app.core.logging import get_logger
 logger = get_logger(__name__)
 router = APIRouter(tags=["billing"])
 
-# Placeholder keys for Stripe
-stripe.api_key = "sk_test_placeholder"
-STRIPE_WEBHOOK_SECRET = "whsec_placeholder"
+if settings.stripe_api_key:
+    stripe.api_key = settings.stripe_api_key
 
 @router.post("/billing/create-checkout-session")
 async def create_checkout_session(user_id: str = Depends(get_current_user)):
@@ -21,10 +20,13 @@ async def create_checkout_session(user_id: str = Depends(get_current_user)):
     Creates a Stripe Checkout session for a subscription upgrade.
     """
     try:
+        if not settings.stripe_pro_price_id:
+            raise HTTPException(status_code=500, detail="Stripe price ID not configured")
+
         session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[{
-                'price': 'price_placeholder', # ID of the Pro tier price
+                'price': settings.stripe_pro_price_id,
                 'quantity': 1,
             }],
             mode='subscription',
@@ -45,17 +47,18 @@ async def stripe_webhook(request: Request):
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
 
+    if not settings.stripe_webhook_secret:
+        raise HTTPException(status_code=500, detail="Stripe webhook secret not configured")
+
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, STRIPE_WEBHOOK_SECRET
+            payload, sig_header, settings.stripe_webhook_secret
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail="Invalid payload")
     except stripe.error.SignatureVerificationError as e:
-        # In a test environment without a real secret, we might just parse the JSON normally.
-        # But for the mock, we'll assume it's valid if we are doing local testing without strict signing.
-        import json
-        event = json.loads(payload)
+        logger.error(f"Stripe signature verification failed: {e}")
+        raise HTTPException(status_code=400, detail="Invalid signature")
 
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']

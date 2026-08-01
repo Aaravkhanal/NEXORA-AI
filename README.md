@@ -1,64 +1,68 @@
 <div align="center">
-  <img src="logo.png" alt="Nexora AI Logo" width="250"/>
+  <img src="frontend/public/logo.png" alt="Nexora AI Logo" width="120" height="120" style="margin-bottom: 20px;" />
   <h1>🦉 Nexora AI</h1>
-  <p><strong>AI-Powered Company Intelligence & Strategic Decision Platform</strong></p>
+  <p><strong>Enterprise-Grade Company Intelligence & Strategic Decision Platform</strong></p>
+  <p>
+    <i>Research • Analyze • Understand Any Company in Minutes.</i>
+  </p>
 </div>
 
 ---
 
-## 🧐 What does this project do exactly?
+## 🧐 What is Nexora AI?
 
-Nexora Intelligence is an AI-powered company intelligence platform that researches businesses, analyzes competitors, generates SWOT and financial insights, builds interactive dashboards, and provides source-backed reports with an AI assistant powered by RAG and multi-LLM workflows.
+Nexora AI is an autonomous, AI-powered company intelligence platform designed for executives, investors, and strategists. It automates the agonizing process of manual web research, competitor analysis, financial mapping, and technology stack identification.
 
-Traditionally, understanding a company's market position, financial health, technology stack, and competitors requires hours of manual web scraping, reading Wikipedia articles, analyzing Crunchbase data, and sifting through recent news. 
-
-Nexora AI automates this entire process. You simply input a company name or website URL, and Nexora orchestrates a swarm of AI agents to:
-1. **Crawl** the web across 8 premium data sources in parallel.
-2. **Synthesize** the unstructured data into structured intelligence (financials, SWOT, products).
-3. **Generate** a beautiful, interactive executive dashboard.
-4. **Build** a dedicated RAG (Retrieval-Augmented Generation) knowledge base, allowing you to chat with an AI assistant to ask deep, strategic questions about the company.
+Instead of manually scraping Crunchbase, Wikipedia, GitHub, and news sites, you simply input a company name. Nexora orchestrates a **swarm of AI agents** to crawl the web, synthesize unstructured data, and generate a beautiful, interactive executive dashboard. It also builds a persistent RAG (Retrieval-Augmented Generation) knowledge base, providing you with an always-on AI Assistant to answer deep, strategic questions.
 
 ---
 
-## 🔄 How it Works (The Flow)
+## 🔄 How It Works (The Complete Architecture Flow)
 
-Nexora AI utilizes a highly optimized, decoupled architecture (FastAPI Backend + Next.js Frontend) to deliver intelligence in seconds.
+Nexora AI relies on a highly optimized, decoupled architecture (FastAPI Backend + Next.js Frontend) to deliver comprehensive intelligence in seconds, bypassing API rate limits through intelligent agent orchestration.
 
-### 1. User Input & Discovery
-The user enters a company name (e.g., "Stripe") or a website (e.g., "https://stripe.com"). The backend's AI Router identifies the correct entity, normalizes the name, and initiates the research job.
+### Phase 1: User Input & Initialization
+1. **Search Request:** The user enters a company name (e.g., "Stripe") via the Next.js frontend.
+2. **Backend Processing:** The request hits the FastAPI backend. A unique job ID is generated and stored in a persistent SQLite job store. Server-Sent Events (SSE) instantly open a connection to stream progress updates back to the UI.
 
-### 2. Parallel Data Crawling
-Using Python's `asyncio` and LangChain's `RunnableParallel`, Nexora simultaneously fires off retrievers to gather raw data from:
-- **Wikipedia** (History, general overview)
-- **Crunchbase / Financial APIs** (Funding, revenue, leadership)
-- **GitHub** (Open source presence, technology stack)
-- **News APIs** (Recent mentions, sentiment analysis)
-- **HackerNews & Reddit** (Public perception, developer sentiment)
-- **ProductHunt** (Product launches)
-- **Official Website** (Direct web crawling and scraping)
+### Phase 2: Parallel Data Gathering (The Swarm)
+Using Python's `asyncio` and custom web crawlers, Nexora simultaneously fires off search retrievers to gather raw data from across the web. To avoid rate limits, the system utilizes a token-bucket rate limiter.
+- **Tavily Search / Crawl:** Fetches the official website, press releases, and recent news.
+- **Wikipedia:** Gathers history, business model, and historical financial context.
+- **Financial APIs / Crunchbase:** Extracts funding, valuation, and leadership data.
 
-### 3. Multi-Agent Synthesis
-The raw data is fed into a **Multi-LLM Pipeline** (orchestrating models like Gemini 3.1 Pro and Llama 3 via Groq). The pipeline uses specialized agents:
-- **The Analyst**: Extracts hard metrics (revenue, employees, tech stack).
-- **The Critic**: Identifies risks, threats, and competitor advantages.
-- **The Polisher**: Formats the intelligence into a cohesive executive summary, SWOT matrix, and health scores.
+### Phase 3: Multi-Agent Synthesis (The Multi-LLM Pipeline)
+Once the raw, unstructured data is collected, it is funneled into Nexora's **Multi-LLM Pipeline** (orchestrating Llama 3.3 via Groq and Gemini Pro). The data is split into multiple concurrent agent tasks:
+- **Financial Agent:** Extracts revenue, funding rounds, valuation, and employee counts.
+- **Product & Competitor Agent:** Identifies the core product offerings and maps the competitive landscape.
+- **Strategic Agent (SWOT):** Synthesizes Strengths, Weaknesses, Opportunities, and Threats into an executive summary matrix.
+- **Reviewer Agent:** Validates the outputs, ensuring the narrative matches the hard data without hallucination.
 
-### 4. Vector Knowledge Base (RAG)
-As the data is synthesized, it is simultaneously chunked and embedded into a local **ChromaDB Vector Store**. This creates a persistent knowledge base for that specific company.
+### Phase 4: Vector Embedding & Knowledge Base (RAG)
+As the intelligence is synthesized, the raw data is chunked and embedded into a local **ChromaDB Vector Store**. 
+- This creates an isolated, persistent semantic database uniquely built for that specific company in real time.
 
-### 5. Interactive Dashboard & Assistant
-The frontend (built with Next.js and Tailwind CSS) polls the SQLite job store via Server-Sent Events (SSE). Once the data is ready, it renders an interactive dashboard featuring:
-- **Interactive Widgets**: Health scores, funding timelines, and market narratives.
-- **Competitor Matrices**: Side-by-side feature comparisons.
-- **Floating AI Assistant**: A globally available chat widget. When you ask a question (e.g., *"What is their biggest weakness?"*), the assistant queries the ChromaDB vector store to provide highly accurate, cited answers based *only* on the retrieved data.
+### Phase 5: Dashboard Rendering & AI Assistant
+- **Dashboard:** The Next.js frontend receives the final parsed JSON from the backend via SSE and instantly renders an interactive, premium Executive Dashboard (featuring Recharts visualizations, SWOT matrices, and Health Scores).
+- **Global AI Assistant:** A globally available floating Chat Widget (Nexora AI Assistant) activates. When the user asks a question (e.g., *"What is their biggest weakness compared to Square?"*), the assistant queries the newly generated ChromaDB vector store to provide highly accurate, cited answers based *only* on the retrieved context.
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Tech Stack
 
-- **Frontend**: Next.js 14+, Tailwind CSS, Framer Motion, Recharts, Custom Nexora Enterprise UI.
-- **Backend**: FastAPI (Python), SQLite (Job & State Store), ChromaDB (Vector Store).
-- **AI Engine**: LangChain, Multi-Agent Routing (Gemini API, Groq).
+### Frontend (Client-Side)
+- **Framework:** Next.js 14+ (App Router, React 18)
+- **Styling:** Tailwind CSS (Premium Apple/Linear aesthetic with strict 8px grid system)
+- **Animations:** Framer Motion (Glassmorphism, micro-interactions, layout transitions)
+- **Data Visualization:** Recharts
+- **Icons:** Lucide React
+
+### Backend (Server-Side)
+- **Framework:** FastAPI (Python 3.10+)
+- **Database:** SQLite (Relational State/Job Tracking)
+- **Vector Store:** ChromaDB (Local semantic search and embeddings)
+- **AI / LLM Orchestration:** LangChain, Groq API (Llama 3.3), Google Gemini API
+- **Concurrency:** `asyncio` with custom Token-Bucket Rate Limiting
 
 ---
 
@@ -67,7 +71,7 @@ The frontend (built with Next.js and Tailwind CSS) polls the SQLite job store vi
 ### Prerequisites
 - Node.js (v18+)
 - Python (3.10+)
-- API Keys: `GROQ_API_KEY`, `GEMINI_API_KEY`, `NVIDIA_API_KEY`, `TAVILY_API_KEY` (Optional)
+- API Keys Required: `GROQ_API_KEY`, `GEMINI_API_KEY`, `TAVILY_API_KEY` (Optional but recommended)
 
 ### 1. Backend Setup
 ```bash
@@ -86,7 +90,7 @@ npm install
 cp .env.example .env.local
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser to start generating reports.
 
 ---
 

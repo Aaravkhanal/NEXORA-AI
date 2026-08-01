@@ -29,6 +29,15 @@ class Settings(BaseSettings):
     alpha_vantage_key: str = ""
     tavily_api_key: str = ""
 
+    # ── Authentication ────────────────────────────────────────────────────────
+    clerk_jwks_url: str = ""
+    clerk_secret_key: str = ""
+
+    # ── Billing ───────────────────────────────────────────────────────────────
+    stripe_api_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_pro_price_id: str = ""
+
     # ── App ───────────────────────────────────────────────────────────────────
     app_env: str = "development"
     log_level: str = "INFO"
@@ -51,7 +60,7 @@ class Settings(BaseSettings):
     chroma_persist_dir: str = "./data/chroma"
     chroma_host: str = "localhost"
     chroma_port: int = 8001
-    embedding_model: str = "models/text-embedding-004"
+    embedding_model: str = "models/gemini-embedding-001"
 
     # ── Persistence & Queue ───────────────────────────────────────────────────
     sqlite_db_path: str = "./data/nexus.db"

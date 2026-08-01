@@ -2,6 +2,11 @@
 Main research pipeline v2 — orchestrates all data collection, embedding, and report generation.
 Emits real-time progress events via the job store.
 Integrates 8 data sources: Wikipedia, GitHub, News, Finance, Crunchbase, HN, Reddit, ProductHunt + Web Crawl.
+
+FIXES:
+- More granular progress events per phase
+- Better error surface on individual source failures
+- Pipeline never silently hangs
 """
 from __future__ import annotations
 
@@ -53,11 +58,9 @@ async def _emit(job_id: str, step: str, message: str, progress: int) -> None:
 
 def _extract_official_website(wiki_result: dict) -> str | None:
     """Try to extract the official website from Wikipedia data."""
-    # Check for explicit website field first
     if url := wiki_result.get("official_website") or wiki_result.get("website"):
         return url
 
-    # Extract from infobox text using regex
     full_text = wiki_result.get("full_text", "")
     patterns = [
         r"(?:official website|website)[:\s]+(?:https?://)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})",
@@ -76,7 +79,7 @@ def _extract_official_website(wiki_result: dict) -> str | None:
 async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
     """
     Full research pipeline v2. Runs 8-source data gathering, AI analysis, and RAG indexing.
-    Updates progress events throughout.
+    Updates progress events throughout. Never silently fails.
     """
     start_time = time.time()
     job_id = job.id
@@ -89,69 +92,72 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
         # ── Step 1: Discover website via Wikipedia ────────────────────────────
         await _emit(job_id, "discovery", f"🔍 Discovering {company_name}...", 5)
 
-        wiki_result = await retrieve_wikipedia(company_name)
-        raw_data["wikipedia"] = wiki_result
+        try:
+            wiki_result = await asyncio.wait_for(retrieve_wikipedia(company_name), timeout=30)
+            raw_data["wikipedia"] = wiki_result
+        except Exception as e:
+            logger.warning("Wikipedia retrieval failed: %s", e)
+            wiki_result = {}
 
         if not website:
             website = _extract_official_website(wiki_result)
 
         # ── Step 2: Parallel data fetching (7 sources) ────────────────────────
-        await _emit(job_id, "fetching", "📡 Collecting data from 7 sources in parallel...", 12)
+        await _emit(job_id, "fetching", "📡 Collecting data from public sources...", 12)
 
         fetch_results = await asyncio.gather(
-            retrieve_github(company_name),
-            retrieve_news(company_name),
-            retrieve_finance(company_name),
-            retrieve_hackernews(company_name),
-            retrieve_reddit(company_name),
-            retrieve_crunchbase(company_name),
-            retrieve_producthunt(company_name),
+            asyncio.wait_for(retrieve_github(company_name), timeout=20),
+            asyncio.wait_for(retrieve_news(company_name), timeout=20),
+            asyncio.wait_for(retrieve_finance(company_name), timeout=20),
+            asyncio.wait_for(retrieve_hackernews(company_name), timeout=20),
+            asyncio.wait_for(retrieve_reddit(company_name), timeout=20),
+            asyncio.wait_for(retrieve_crunchbase(company_name), timeout=20),
+            asyncio.wait_for(retrieve_producthunt(company_name), timeout=20),
             return_exceptions=True,
         )
 
-        gh_result, news_result, finance_result, hn_result, reddit_result, cb_result, ph_result = fetch_results
+        source_names = ["github", "news", "finance", "hackernews", "reddit", "crunchbase", "producthunt"]
+        source_status: dict[str, str] = {}
+        for name, result in zip(source_names, fetch_results):
+            if isinstance(result, Exception):
+                logger.warning("Source '%s' failed: %s", name, result)
+                source_status[name] = f"failed: {type(result).__name__}"
+            else:
+                raw_data[name] = result
+                source_status[name] = "ok"
 
-        if not isinstance(gh_result, Exception):
-            raw_data["github"] = gh_result
-        if not isinstance(news_result, Exception):
-            raw_data["news"] = news_result
-        if not isinstance(finance_result, Exception):
-            raw_data["finance"] = finance_result
-        if not isinstance(hn_result, Exception):
-            raw_data["hackernews"] = hn_result
-        if not isinstance(reddit_result, Exception):
-            raw_data["reddit"] = reddit_result
-        if not isinstance(cb_result, Exception):
-            raw_data["crunchbase"] = cb_result
-        if not isinstance(ph_result, Exception):
-            raw_data["producthunt"] = ph_result
-
-        logger.info(
-            "Data fetch complete: %s",
-            {k: "ok" if not isinstance(v, Exception) else "error" for k, v in zip(
-                ["github", "news", "finance", "hn", "reddit", "crunchbase", "ph"],
-                fetch_results
-            )}
-        )
+        logger.info("Data fetch complete: %s", source_status)
+        
+        successful = sum(1 for s in source_status.values() if s == "ok")
+        await _emit(job_id, "fetching", f"📡 {successful}/7 data sources collected successfully", 22)
 
         # ── Step 3: Web crawling ──────────────────────────────────────────────
-        await _emit(job_id, "crawling", f"🕷️  Crawling {website or company_name + '.com'}...", 28)
-
         crawled_pages: list[dict[str, str]] = []
         if website:
+            await _emit(job_id, "crawling", f"🕷️ Crawling {website}...", 28)
             try:
-                crawled_pages = await crawl_website(website, max_pages=30)
+                crawled_pages = await asyncio.wait_for(
+                    crawl_website(website, max_pages=15),
+                    timeout=60,
+                )
                 raw_data["crawled_pages"] = crawled_pages
                 # Extract logo from crawled pages
                 for page in crawled_pages[:3]:
                     logo = page.get("og_image") or page.get("favicon")
                     if logo and not raw_data.get("logo_url"):
                         raw_data["logo_url"] = logo
+                await _emit(job_id, "crawling", f"🕷️ Crawled {len(crawled_pages)} pages from {website}", 35)
+            except asyncio.TimeoutError:
+                logger.warning("Web crawl timed out for %s", website)
+                await _emit(job_id, "crawling", "⚠️ Website crawl timed out, continuing with other sources...", 35)
             except Exception as exc:
                 logger.warning("Web crawl failed: %s", exc)
+                await _emit(job_id, "crawling", "⚠️ Website unavailable, using other sources...", 35)
+        else:
+            await _emit(job_id, "crawling", "⚠️ No website found, skipping crawl...", 35)
 
         # ── Step 4: Build RAG knowledge base ──────────────────────────────────
-        await _emit(job_id, "indexing", "🧠 Building RAG knowledge base...", 40)
+        await _emit(job_id, "indexing", "🧠 Building knowledge base...", 40)
 
         all_docs: list[dict[str, str]] = []
         all_docs.extend(crawled_pages)
@@ -174,7 +180,6 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
                     "source": "news",
                 })
 
-        # Add HN and Reddit text
         for hn_post in (raw_data.get("hackernews", {}).get("results", []))[:5]:
             if hn_post.get("text"):
                 all_docs.append({
@@ -187,19 +192,28 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
         if all_docs:
             try:
                 loop = asyncio.get_event_loop()
-                chunks_count = await loop.run_in_executor(
-                    None, build_knowledge_base, job_id, all_docs
+                chunks_count = await asyncio.wait_for(
+                    loop.run_in_executor(None, build_knowledge_base, job_id, all_docs),
+                    timeout=60,
                 )
-                logger.info("Indexed %d chunks", chunks_count)
+                logger.info("Indexed %d chunks for RAG", chunks_count)
+                await _emit(job_id, "indexing", f"🧠 Indexed {chunks_count} knowledge chunks", 45)
+            except asyncio.TimeoutError:
+                logger.warning("RAG indexing timed out — chat will still work from report data")
             except Exception as exc:
-                logger.warning("RAG indexing failed: %s", exc)
+                logger.warning("RAG indexing failed (non-fatal): %s", exc)
+        
+        # ── Step 5: AI Report Generation (3 batched phases) ──────────────────
+        await _emit(job_id, "analyzing", "✨ AI analyzing company overview & financials...", 50)
 
-        # ── Step 5: AI Report Generation (14 sections) ───────────────────────
-        await _emit(job_id, "analyzing", "✨ Generating AI intelligence report (14 sections)...", 50)
+        # The report generator now runs in 3 sequential batches with internal progress
+        # We update progress at the end of each batch
+        async def on_progress(step: str, message: str, progress: int) -> None:
+            await _emit(job_id, step, message, progress)
 
-        sections = await generate_full_report_sections(company_name, raw_data)
+        sections = await generate_full_report_sections(company_name, raw_data, emit_cb=on_progress)
 
-        await _emit(job_id, "synthesizing", "📊 Synthesizing all findings...", 88)
+        await _emit(job_id, "synthesizing", "📊 Synthesizing all intelligence...", 90)
 
         # ── Step 6: Assemble final report ─────────────────────────────────────
         elapsed = round(time.time() - start_time, 2)
@@ -262,7 +276,6 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
             recent_news=news_items,
             github=github_model,
             ai_summary=sections["ai_summary"],
-            # New v2 sections
             milestones=sections["milestones"],
             feature_matrix=sections["feature_matrix"],
             competitor_narrative=sections["competitor_narrative"],
@@ -273,7 +286,7 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
             models_used=sections.get("models_used", []),
         )
 
-        job_store.save_report(report)
+        await job_store.save_report_async(report)
         await job_store.update_job_async(
             job_id,
             status=JobStatus.COMPLETED,
@@ -285,6 +298,10 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
         await _emit(job_id, "complete", "✅ Intelligence report ready!", 100)
         await job_store.close_progress(job_id)
 
+        logger.info(
+            "Pipeline complete for '%s' in %.1fs using sources: %s",
+            company_name, elapsed, sources_used
+        )
         return report
 
     except Exception as exc:

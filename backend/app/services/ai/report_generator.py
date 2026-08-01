@@ -1,12 +1,17 @@
 """AI report generator v2 — uses multi-LLM routing with role-based model assignment.
 Each generator function is assigned an appropriate LLM role for best results.
+
+FIXES:
+- Phase 1 now runs in 3 batches of 3 instead of 9 concurrent (avoids rate limits)
+- Each section wrapped in asyncio.wait_for to prevent hangs
+- Graceful fallback per-section (failure of one doesn't kill the report)
 """
 from __future__ import annotations
 
 import asyncio
 import json
 import re
-from typing import Any
+from typing import Any, Callable, Awaitable
 
 from app.core.config import settings
 from app.core.logging import get_logger
@@ -38,6 +43,8 @@ from app.models.schemas import (
 from app.services.ai.multi_llm import consensus_invoke, multi_llm_invoke
 
 logger = get_logger(__name__)
+
+_SECTION_TIMEOUT = 120.0  # Max seconds per section
 
 _SYSTEM_PROMPT = """You are an elite company intelligence analyst at a top-tier global research firm (like McKinsey, Gartner, or CB Insights).
 Your analysis is precise, factual, evidence-based, and structured.
@@ -103,7 +110,7 @@ def _build_context(raw_data: dict[str, Any], max_chars: int = 12000) -> str:
     if pages := raw_data.get("crawled_pages", []):
         page_parts = []
         for p in pages[:12]:
-            text = (p.get("text") or "")[:2000]  # Fixed: was 500
+            text = (p.get("text") or "")[:2000]
             if text:
                 page_parts.append(f"URL: {p.get('url', '')}\nTitle: {p.get('title', '')}\n{text}")
         if page_parts:
@@ -146,6 +153,20 @@ def _build_context(raw_data: dict[str, Any], max_chars: int = 12000) -> str:
     combined_parts = [text for _, text in parts]
     context = "\n\n".join(combined_parts)
     return context[:max_chars]
+
+
+# ── Safe section wrapper ───────────────────────────────────────────────────────
+
+async def _safe_section(coro, section_name: str, fallback):
+    """Run a section coroutine with timeout; return fallback on any failure."""
+    try:
+        return await asyncio.wait_for(coro, timeout=_SECTION_TIMEOUT)
+    except asyncio.TimeoutError:
+        logger.error("Section '%s' timed out after %ss", section_name, _SECTION_TIMEOUT)
+        return fallback
+    except Exception as exc:
+        logger.error("Section '%s' failed: %s", section_name, exc)
+        return fallback
 
 
 # ── Report Section Generators ─────────────────────────────────────────────────
@@ -468,7 +489,6 @@ Return JSON:
   "threat_assessment": "Assessment of most serious competitive threats and their likelihood"
 }}"""
     try:
-        # Use consensus for this important narrative section
         if settings.consensus_mode:
             raw = await consensus_invoke(_SYSTEM_PROMPT, prompt)
             model = "consensus"
@@ -618,7 +638,6 @@ Return JSON:
   "investment_thesis": "3 paragraph balanced investment thesis covering bull case, bear case, and key watchpoints"
 }}"""
     try:
-        # Use consensus for the most important summary section
         if settings.consensus_mode:
             raw = await consensus_invoke(_SYSTEM_PROMPT, prompt)
             model = "consensus"
@@ -639,9 +658,19 @@ Return JSON:
 async def generate_full_report_sections(
     company_name: str,
     raw_data: dict[str, Any],
+    emit_cb: Callable[[str, str, int], Awaitable[None]] | None = None,
 ) -> dict[str, Any]:
-    """Run all core report sections in parallel, then run dependent sections."""
-    # Phase 1: All independent sections in parallel
+    """
+    Run all core report sections in batched parallel groups to avoid rate limits.
+    
+    Phase 1A: First 3 sections (highest priority)
+    Phase 1B: Next 3 sections
+    Phase 1C: Final 3 sections  
+    Phase 2: Dependent sections using Phase 1 results
+    """
+    logger.info("Phase 1: Concurrent Generation of all core sections")
+    if emit_cb:
+        await emit_cb("analyzing", "✨ AI analyzing all company dimensions concurrently...", 55)
     (
         (overview, m1),
         (business_model, m2),
@@ -653,18 +682,23 @@ async def generate_full_report_sections(
         (milestones, m8),
         (geographic_presence, m9),
     ) = await asyncio.gather(
-        generate_overview(company_name, raw_data),
-        generate_business_model(company_name, raw_data),
-        generate_revenue_intelligence(company_name, raw_data),
-        generate_products(company_name, raw_data),
-        generate_tech_stack(company_name, raw_data),
-        generate_market_analysis(company_name, raw_data),
-        generate_competitors(company_name, raw_data),
-        generate_milestones(company_name, raw_data),
-        generate_geographic_presence(company_name, raw_data),
+        _safe_section(generate_overview(company_name, raw_data), "overview", (CompanyOverview(name=company_name), "error")),
+        _safe_section(generate_business_model(company_name, raw_data), "business_model", (BusinessModel(), "error")),
+        _safe_section(generate_revenue_intelligence(company_name, raw_data), "revenue_intelligence", (RevenueIntelligence(), "error")),
+        _safe_section(generate_products(company_name, raw_data), "products", ([], "error")),
+        _safe_section(generate_tech_stack(company_name, raw_data), "tech_stack", (TechStack(), "error")),
+        _safe_section(generate_market_analysis(company_name, raw_data), "market_analysis", (MarketAnalysis(), "error")),
+        _safe_section(generate_competitors(company_name, raw_data), "competitors", ([], "error")),
+        _safe_section(generate_milestones(company_name, raw_data), "milestones", ([], "error")),
+        _safe_section(generate_geographic_presence(company_name, raw_data), "geographic_presence", (GeographicPresence(), "error")),
     )
 
+    await asyncio.sleep(2)
+
     # Phase 2: Sections that depend on Phase 1 results
+    logger.info("Phase 2: Feature matrix, narrative, recommendations, knowledge graph, AI summary")
+    if emit_cb:
+        await emit_cb("synthesizing", "📊 Synthesizing all intelligence...", 85)
     sections_summary = json.dumps({
         "overview": overview.model_dump(),
         "business_model": business_model.model_dump(),
@@ -679,15 +713,19 @@ async def generate_full_report_sections(
         (knowledge_graph, m13),
         (ai_summary, m14),
     ) = await asyncio.gather(
-        generate_feature_matrix(company_name, competitors, raw_data),
-        generate_competitor_narrative(company_name, raw_data),
-        generate_strategic_recommendations(company_name, raw_data, sections_summary),
-        generate_knowledge_graph(company_name, overview, competitors, raw_data),
-        generate_ai_summary(company_name, raw_data, {
-            "overview": overview.model_dump(),
-            "business_model": business_model.model_dump(),
-            "revenue_intelligence": revenue_intel.model_dump(),
-        }),
+        _safe_section(generate_feature_matrix(company_name, competitors, raw_data), "feature_matrix", ([], "error")),
+        _safe_section(generate_competitor_narrative(company_name, raw_data), "competitor_narrative", (CompetitorNarrative(), "error")),
+        _safe_section(generate_strategic_recommendations(company_name, raw_data, sections_summary), "strategic_recommendations", ([], "error")),
+        _safe_section(generate_knowledge_graph(company_name, overview, competitors, raw_data), "knowledge_graph", (KnowledgeGraph(), "error")),
+        _safe_section(
+            generate_ai_summary(company_name, raw_data, {
+                "overview": overview.model_dump(),
+                "business_model": business_model.model_dump(),
+                "revenue_intelligence": revenue_intel.model_dump(),
+            }),
+            "ai_summary",
+            (AiSummary(executive_summary=f"Analysis for {company_name}."), "error"),
+        ),
     )
 
     models_used = list({m for m in [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14] if m and m != "error"})

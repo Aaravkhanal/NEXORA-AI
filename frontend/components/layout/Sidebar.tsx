@@ -24,7 +24,6 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
     { name: 'Competitors', href: '#', icon: Target },
     { name: 'Watchlists', href: '#', icon: Bookmark },
     { name: 'News', href: '#', icon: Newspaper },
-    { name: 'AI Assistant', href: '#', icon: MessageSquare, badge: 'New' },
   ]
 
   const bottomNav = [
@@ -75,11 +74,6 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
                   <item.icon className={`w-5 h-5 ${isActive ? 'text-nexora-emerald' : 'text-nexora-mediumgray group-hover:text-nexora-charcoal transition-colors'}`} />
                   {item.name}
                 </div>
-                {item.badge && (
-                  <span className="px-2 py-0.5 text-[10px] font-bold text-nexora-emerald bg-nexora-emerald/10 rounded-full uppercase tracking-wide">
-                    {item.badge}
-                  </span>
-                )}
               </Link>
             )
           })}

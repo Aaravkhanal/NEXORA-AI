@@ -18,10 +18,10 @@ class JobModel(Base):
     user_id = Column(String, index=True, nullable=True) # Link to Clerk ID
     company_name = Column(String, index=True)
     website = Column(String, nullable=True)
-    status = Column(String, default="pending")
+    status = Column(String, default="pending", index=True)
     progress = Column(Integer, default=0)
     current_step = Column(String, default="Initializing...")
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
     completed_at = Column(DateTime, nullable=True)
     report_id = Column(String, nullable=True)
     error = Column(String, nullable=True)
@@ -34,5 +34,5 @@ class ReportModel(Base):
     user_id = Column(String, index=True, nullable=True) # Link to Clerk ID
     company_name = Column(String, index=True)
     website = Column(String, nullable=True)
-    generated_at = Column(DateTime, default=datetime.datetime.utcnow)
+    generated_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
     data = Column(JSON, nullable=True)

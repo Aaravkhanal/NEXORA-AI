@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { FloatingAssistant } from '@/components/chat/FloatingAssistant'
 import LayoutWrapper from '@/components/layout/LayoutWrapper'
 
 export const metadata: Metadata = {
@@ -26,7 +25,6 @@ export default function RootLayout({
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
-        <FloatingAssistant />
       </body>
     </html>
   )

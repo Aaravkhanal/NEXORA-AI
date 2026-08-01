@@ -109,7 +109,7 @@ class JobStore:
                 job_model.completed_at = datetime.utcnow()
 
             # Merge back into data blob for full representation
-            data = job_model.data or {}
+            data = dict(job_model.data) if job_model.data else {}
             data.update({
                 "id": job_model.id,
                 "company_name": job_model.company_name,
