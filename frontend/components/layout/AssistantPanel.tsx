@@ -149,20 +149,14 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
           className="fixed top-4 bottom-4 right-4 w-[420px] max-w-[calc(100vw-2rem)] bg-white rounded-3xl shadow-glass border border-black/5 flex flex-col z-50"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-5 border-b border-black/5 shrink-0">
+          <div className="flex items-center justify-between p-4 border-b border-black/5 shrink-0 bg-white rounded-t-2xl">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-10 h-10 bg-nexora-charcoal rounded-xl flex items-center justify-center p-1.5">
-                  <img src="/owl.png" alt="Nexora Owl" className="w-full h-full object-contain" />
-                </div>
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-nexora-emerald rounded-full border-2 border-white" />
+              <div className="w-8 h-8 rounded-full bg-nexora-emerald/10 flex items-center justify-center">
+                <SparkleIcon className="w-4 h-4 text-nexora-emerald" />
               </div>
               <div>
-                <h3 className="font-bold text-nexora-charcoal text-sm">Nexora AI Assistant</h3>
-                <p className="text-xs text-nexora-emerald font-semibold flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-nexora-emerald inline-block animate-pulse" />
-                  Online
-                </p>
+                <h3 className="font-semibold text-nexora-charcoal text-sm">Nexora AI Assistant</h3>
+                <p className="text-[11px] text-nexora-mediumgray">Online</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -194,15 +188,15 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
                   className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                 >
                   {msg.role === 'assistant' && (
-                    <div className="w-7 h-7 shrink-0 bg-nexora-charcoal rounded-lg flex items-center justify-center p-1 mt-1">
-                      <img src="/owl.png" alt="AI" className="w-full h-full object-contain" />
+                    <div className="w-7 h-7 shrink-0 bg-nexora-emerald/10 rounded-full flex items-center justify-center mt-2">
+                      <SparkleIcon className="w-3.5 h-3.5 text-nexora-emerald" />
                     </div>
                   )}
                   <div className={`group relative max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                    <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                    <div className={`text-[15px] leading-relaxed ${
                       msg.role === 'user'
-                        ? 'bg-nexora-charcoal text-white rounded-tr-none'
-                        : 'bg-nexora-warmwhite text-nexora-charcoal rounded-tl-none border border-black/5'
+                        ? 'bg-nexora-surface text-nexora-charcoal px-4 py-3 rounded-2xl rounded-tr-sm'
+                        : 'text-nexora-charcoal px-2 py-2'
                     }`}>
                       {msg.role === 'assistant' ? (
                         <div className="prose-nexora prose prose-sm max-w-none">
@@ -234,20 +228,19 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
                 animate={{ opacity: 1 }}
                 className="flex gap-3"
               >
-                <div className="w-7 h-7 shrink-0 bg-nexora-charcoal rounded-lg flex items-center justify-center p-1">
-                  <img src="/owl.png" alt="AI" className="w-full h-full object-contain" />
+                <div className="w-7 h-7 shrink-0 bg-nexora-emerald/10 rounded-full flex items-center justify-center mt-1">
+                  <SparkleIcon className="w-3.5 h-3.5 text-nexora-emerald" />
                 </div>
-                <div className="bg-nexora-warmwhite rounded-2xl rounded-tl-none px-4 py-3 border border-black/5 flex items-center gap-2">
+                <div className="px-2 py-2 flex items-center gap-2">
                   <div className="flex gap-1">
                     {[0, 1, 2].map(i => (
                       <span
                         key={i}
-                        className="w-1.5 h-1.5 bg-nexora-emerald rounded-full animate-bounce"
+                        className="w-1.5 h-1.5 bg-nexora-mediumgray rounded-full animate-bounce"
                         style={{ animationDelay: `${i * 0.15}s` }}
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-nexora-mediumgray">Analyzing...</span>
                 </div>
               </motion.div>
             )}
@@ -280,27 +273,27 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 border-t border-black/5 shrink-0">
+          <div className="p-4 bg-white rounded-b-2xl shrink-0">
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="Ask anything about this company..."
+                placeholder="Message Nexora AI..."
                 disabled={isLoading}
-                className="flex-1 bg-nexora-warmwhite border border-black/5 rounded-2xl py-3 px-4 text-sm text-nexora-charcoal placeholder:text-nexora-mediumgray focus:outline-none focus:ring-2 focus:ring-nexora-emerald/20 focus:border-nexora-emerald transition-all disabled:opacity-60"
+                className="flex-1 bg-nexora-surface border border-transparent rounded-full py-3 px-5 text-[14px] text-nexora-charcoal placeholder:text-nexora-mediumgray focus:outline-none focus:ring-2 focus:ring-nexora-emerald/20 focus:border-nexora-emerald/50 transition-all disabled:opacity-60"
               />
               <button
                 type="submit"
                 disabled={isLoading || !input.trim()}
-                className="w-10 h-10 bg-nexora-emerald text-white rounded-xl flex items-center justify-center hover:bg-nexora-forest transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                className="w-10 h-10 bg-nexora-charcoal text-white rounded-full flex items-center justify-center hover:bg-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </button>
             </form>
-            <p className="text-[10px] text-nexora-mediumgray text-center mt-2">
-              Powered by Nexora RAG • Responses cite real sources
+            <p className="text-[10px] text-nexora-mediumgray text-center mt-3">
+              AI can make mistakes. Verify critical information.
             </p>
           </div>
         </motion.div>

@@ -20,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="h-full antialiased selection:bg-nexora-green/20 selection:text-nexora-green">
-      <body className="h-full bg-nexora-cream text-nexora-navy font-sans">
+    <html lang="en" className="h-full antialiased selection:bg-nexora-emerald/20 selection:text-nexora-emerald dark">
+      <body className="h-full bg-[#0A0A0A] text-white font-sans">
         <LayoutWrapper>
           {children}
         </LayoutWrapper>

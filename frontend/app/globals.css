@@ -6,23 +6,21 @@
 @source "../components";
 
 @theme {
-  /* Primary */
-  --color-nexora-charcoal: #1B1F24;
-  --color-nexora-black: #111111;
-  --color-nexora-warmwhite: #FAF8F3;
-  --color-nexora-white: #FFFFFF;
+  /* Primary - Dark Theme */
+  --color-nexora-charcoal: #121212;
+  --color-nexora-black: #050505;
+  --color-nexora-warmwhite: #1A1A1A;
+  --color-nexora-white: #202020;
+  --color-nexora-surface: #1E1E1E;
 
-  /* Accent */
-  --color-nexora-emerald: #22C55E;
-  --color-nexora-forest: #166534;
-  --color-nexora-orange: #F97316;
-  --color-nexora-amber: #FBBF24;
-  --color-nexora-gold: #D4A017;
-  --color-nexora-lightgray: #F5F5F5;
+  /* Accent - Nexora Green ONLY */
+  --color-nexora-emerald: #10A37F;
+  --color-nexora-forest: #0D8C6C;
+  --color-nexora-lightgray: #333333;
   --color-nexora-mediumgray: #9CA3AF;
   
   --font-sans: "Inter", system-ui, sans-serif;
-  --font-display: "Syne", system-ui, sans-serif;
+  --font-display: "Inter", system-ui, sans-serif;
 
   --animate-spin-slow: spin 3s linear infinite;
   --animate-pulse-slow: pulse 3s ease-in-out infinite;
@@ -55,14 +53,14 @@
 }
 
 :root {
-  /* Layout Colors */
-  --bg-primary: var(--color-nexora-warmwhite);
-  --bg-secondary: var(--color-nexora-white);
-  --text-primary: var(--color-nexora-black);
-  --text-secondary: var(--color-nexora-charcoal);
-  --text-muted: var(--color-nexora-mediumgray);
+  /* Layout Colors - Dark Theme */
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #121212;
+  --text-primary: #FFFFFF;
+  --text-secondary: #E5E7EB;
+  --text-muted: #9CA3AF;
   
-  --border-subtle: #E5E7EB;
+  --border-subtle: #2D2D2D;
   --border-active: var(--color-nexora-emerald);
 }
 
@@ -157,4 +155,18 @@ body {
 .progress-bar-striped {
   background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
   background-size: 1rem 1rem;
+}
+
+/* Premium Glassmorphism Containers */
+.glass-container {
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.glass-green-border {
+  border: 1px solid rgba(16, 163, 127, 0.2);
+  box-shadow: 0 4px 24px -4px rgba(16, 163, 127, 0.1);
 }

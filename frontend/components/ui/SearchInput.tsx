@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Globe, ArrowRight, Loader2 } from 'lucide-react'
+import { Search, Globe, ArrowRight, Loader2, Paperclip } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createPortal } from 'react-dom'
 import api from '@/lib/api'
@@ -21,7 +21,7 @@ export function SearchInput({ className = '', autoFocus = false, large = false }
   
   // Progress Overlay State
   const [activeJobId, setActiveJobId] = useState<string | null>(null)
-  const [progressMsg, setProgressMsg] = useState('Initializing AI agents...')
+  const [progressMsg, setProgressMsg] = useState('Searching...')
   const [progressValue, setProgressValue] = useState(0)
   const [mounted, setMounted] = useState(false)
 
@@ -45,7 +45,7 @@ export function SearchInput({ className = '', autoFocus = false, large = false }
       const response = await api.startResearch(payload)
       setActiveJobId(response.job_id)
       setProgressValue(10)
-      setProgressMsg('Crawling public data sources...')
+      setProgressMsg('Collecting Company Data...')
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to start research.')
       setIsLoading(false)
@@ -105,43 +105,41 @@ export function SearchInput({ className = '', autoFocus = false, large = false }
     <>
       <div className={`relative w-full ${className}`}>
         <form onSubmit={handleSubmit} className="relative group w-full">
-          <div className={`absolute left-0 top-0 bottom-0 flex items-center justify-center text-nexora-mediumgray transition-colors group-focus-within:text-nexora-emerald ${large ? 'w-16' : 'w-12'}`}>
-            {isLoading && !activeJobId ? (
-              <Loader2 className={`animate-spin ${large ? 'w-6 h-6' : 'w-5 h-5'}`} />
-            ) : isUrl ? (
-              <Globe className={large ? 'w-6 h-6' : 'w-4 h-4'} />
-            ) : (
-              <Search className={large ? 'w-6 h-6' : 'w-4 h-4'} />
-            )}
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center gap-3">
+            <button type="button" className="p-2 text-nexora-mediumgray hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full" title="Upload annual report">
+              <Paperclip className={large ? 'w-5 h-5' : 'w-4 h-4'} />
+            </button>
+            <div className="w-px h-5 bg-white/10 hidden sm:block"></div>
           </div>
           
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Search for a company..."
+            placeholder="Search company, paste URL, or ask a strategic question..."
             autoFocus={autoFocus}
-            className={`w-full bg-white border border-black/5 rounded-2xl text-nexora-charcoal placeholder:text-nexora-mediumgray focus:outline-none focus:border-nexora-emerald focus:ring-[3px] focus:ring-nexora-emerald/20 transition-all shadow-premium hover:shadow-premium-hover ${
-              large ? 'h-[60px] pl-16 pr-[72px] text-lg' : 'h-[48px] pl-12 pr-14 text-sm'
+            className={`w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-white placeholder:text-nexora-mediumgray focus:outline-none focus:border-nexora-emerald focus:ring-[2px] focus:ring-nexora-emerald/20 transition-all shadow-glass ${
+              large ? 'h-[64px] pl-20 pr-[72px] text-base' : 'h-[50px] pl-16 pr-14 text-sm'
             }`}
             disabled={isLoading}
           />
           
-          <div className={`absolute right-2 top-2 bottom-2 flex items-center gap-2`}>
-            {!input.trim() && large && (
-              <span className="hidden sm:flex text-xs font-bold text-nexora-mediumgray bg-black/5 border border-black/5 px-2 py-1 rounded items-center gap-1 shadow-sm">
-                ⌘K
-              </span>
+          <div className={`absolute right-2 top-2 bottom-2 flex items-center`}>
+            {isLoading && !activeJobId ? (
+               <div className="w-10 h-full flex items-center justify-center">
+                 <Loader2 className={`animate-spin text-nexora-emerald ${large ? 'w-6 h-6' : 'w-5 h-5'}`} />
+               </div>
+            ) : (
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className={`bg-nexora-emerald text-white rounded-full flex items-center justify-center transition-all disabled:opacity-30 disabled:bg-white/10 disabled:text-white/40 ${
+                  large ? 'w-12 h-full' : 'w-10 h-full'
+                }`}
+              >
+                <ArrowRight className={large ? 'w-5 h-5' : 'w-4 h-4'} />
+              </button>
             )}
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className={`bg-nexora-charcoal hover:bg-nexora-emerald text-white rounded-[14px] flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
-                large ? 'w-12 h-full shadow-sm' : 'w-10 h-full'
-              }`}
-            >
-              <ArrowRight className={large ? 'w-5 h-5' : 'w-4 h-4'} />
-            </button>
           </div>
         </form>
         
@@ -167,12 +165,12 @@ export function SearchInput({ className = '', autoFocus = false, large = false }
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-white/80 backdrop-blur-md z-[9999] flex items-center justify-center"
+              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-center justify-center"
             >
               <motion.div 
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
-                className="w-full max-w-md bg-white p-8 rounded-3xl shadow-glass border border-black/5 text-center relative overflow-hidden"
+                className="w-full max-w-md bg-nexora-charcoal p-8 rounded-3xl shadow-glass border border-white/10 text-center relative overflow-hidden"
               >
                 {/* Animated Logo */}
                 <div className="relative h-24 mb-6 flex items-center justify-center">
@@ -191,14 +189,14 @@ export function SearchInput({ className = '', autoFocus = false, large = false }
                   </motion.div>
                 </div>
 
-                <h2 className="text-xl font-bold text-nexora-charcoal mb-2">Analyzing {input}</h2>
+                <h2 className="text-xl font-bold text-white mb-2">Analyzing {input}</h2>
                 <div className="flex justify-between items-end mb-2 min-h-[20px]">
                   <p className="text-sm font-medium text-nexora-emerald">{progressMsg}</p>
-                  <span className="text-xs font-bold text-nexora-charcoal">{progressValue}%</span>
+                  <span className="text-xs font-bold text-white">{progressValue}%</span>
                 </div>
 
                 {/* Custom Progress Bar */}
-                <div className="w-full h-3 bg-nexora-warmwhite rounded-full overflow-hidden border border-black/5">
+                <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden border border-white/10">
                   <motion.div 
                     className="h-full bg-nexora-emerald progress-bar-striped"
                     initial={{ width: 0 }}

@@ -23,14 +23,10 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       {!assistantOpen && (
         <button
           onClick={() => setAssistantOpen(true)}
-          className="fixed bottom-6 right-6 w-[60px] h-[60px] bg-nexora-emerald/90 backdrop-blur-md border border-white/20 rounded-full shadow-premium hover:shadow-premium-hover hover:scale-105 transition-all duration-300 flex items-center justify-center z-40 group"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-nexora-emerald rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center z-40 group"
           aria-label="Open AI Assistant"
         >
-          <MessageSquare className="w-7 h-7 text-white drop-shadow-md" />
-          {/* Pulse ring */}
-          <span className="absolute inset-0 rounded-full bg-nexora-emerald animate-ping opacity-20 pointer-events-none" />
-          {/* Notification dot */}
-          <div className="absolute top-0 right-0 w-3.5 h-3.5 bg-nexora-amber rounded-full border-2 border-white shadow-sm" />
+          <MessageSquare className="w-6 h-6 text-white" />
         </button>
       )}
       <AssistantPanel isOpen={assistantOpen} onClose={() => setAssistantOpen(false)} />
@@ -39,7 +35,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   if (isMarketingPage) {
     return (
-      <div className="flex flex-col min-h-screen bg-nexora-warmwhite text-nexora-black selection:bg-nexora-emerald/20 selection:text-nexora-emerald">
+      <div className="flex flex-col min-h-screen bg-[#0A0A0A] text-white selection:bg-nexora-emerald/20 selection:text-nexora-emerald">
         <MarketingTopNav />
         <main className="flex-1">
           {children}
@@ -50,10 +46,10 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-nexora-warmwhite text-nexora-black selection:bg-nexora-emerald/20 selection:text-nexora-emerald">
+    <div className="flex h-screen overflow-hidden bg-[#0A0A0A] text-white selection:bg-nexora-emerald/20 selection:text-nexora-emerald">
       <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
 
-      <div className="flex-1 flex flex-col min-w-0 bg-nexora-warmwhite transition-all duration-300 ease-in-out h-full overflow-hidden relative">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#0A0A0A] transition-all duration-300 ease-in-out h-full overflow-hidden relative">
         <DashboardTopNav toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <main className="flex-1 overflow-y-auto hide-scrollbar">
           {children}

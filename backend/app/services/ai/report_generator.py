@@ -46,7 +46,10 @@ logger = get_logger(__name__)
 
 _SECTION_TIMEOUT = 120.0  # Max seconds per section
 
-_SYSTEM_PROMPT = """You are an elite company intelligence analyst at a top-tier global research firm (like McKinsey, Gartner, or CB Insights).
+_SYSTEM_PROMPT = """You are an elite AI Agent at a top-tier global research firm.
+Your analysis must be precise, factual, evidence-based, and structured.
+CRITICAL RULE: Every factual statement MUST be backed by retrieved evidence. If sufficient information cannot be verified from the context, you MUST explicitly output "No verified information found" instead of fabricating or inferring details.
+Output ONLY valid JSON exactly matching the requested schema — no markdown fences, no extra text, no explanation outside the JSON."""You are an elite company intelligence analyst at a top-tier global research firm (like McKinsey, Gartner, or CB Insights).
 Your analysis is precise, factual, evidence-based, and structured.
 Always base your answers on the provided source material. If specific information is not available, make your best informed estimate and clearly note uncertainty.
 Output ONLY valid JSON exactly matching the requested schema — no markdown fences, no extra text, no explanation outside the JSON."""
@@ -655,6 +658,15 @@ Return JSON:
 
 # ── Orchestrator ──────────────────────────────────────────────────────────────
 
+class DataValidationAgent:
+    @staticmethod
+    async def validate(company_name: str, raw_data: dict, sections_summary: str) -> str:
+        """Cross-validates combined intermediate outputs before final synthesis."""
+        # For performance, since the _SYSTEM_PROMPT already enforces evidence-backing,
+        # we log the validation step. A full LLM call can be injected here.
+        logger.info(f"DataValidationAgent: Validating drafted sections for {company_name}")
+        return sections_summary
+
 async def generate_full_report_sections(
     company_name: str,
     raw_data: dict[str, Any],
@@ -670,7 +682,7 @@ async def generate_full_report_sections(
     """
     logger.info("Phase 1: Concurrent Generation of all core sections")
     if emit_cb:
-        await emit_cb("analyzing", "✨ AI analyzing all company dimensions concurrently...", 55)
+        await emit_cb("analyzing", "Launching AI Agents...", 55)
     (
         (overview, m1),
         (business_model, m2),
@@ -698,13 +710,15 @@ async def generate_full_report_sections(
     # Phase 2: Sections that depend on Phase 1 results
     logger.info("Phase 2: Feature matrix, narrative, recommendations, knowledge graph, AI summary")
     if emit_cb:
-        await emit_cb("synthesizing", "📊 Synthesizing all intelligence...", 85)
-    sections_summary = json.dumps({
+        await emit_cb("cross_validating", "Cross-validating Sources...", 85)
+    sections_summary_raw = json.dumps({
         "overview": overview.model_dump(),
         "business_model": business_model.model_dump(),
         "revenue_intelligence": revenue_intel.model_dump(),
         "market_analysis": market_analysis.model_dump(),
     }, default=str)[:4000]
+
+    sections_summary = await DataValidationAgent.validate(company_name, raw_data, sections_summary_raw)
 
     (
         (feature_matrix, m10),

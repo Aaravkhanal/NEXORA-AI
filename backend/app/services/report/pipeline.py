@@ -90,7 +90,7 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
 
     try:
         # ── Step 1: Discover website via Wikipedia ────────────────────────────
-        await _emit(job_id, "discovery", f"🔍 Discovering {company_name}...", 5)
+        await _emit(job_id, "discovery", "Searching...", 5)
 
         try:
             wiki_result = await asyncio.wait_for(retrieve_wikipedia(company_name), timeout=30)
@@ -103,7 +103,7 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
             website = _extract_official_website(wiki_result)
 
         # ── Step 2: Parallel data fetching (7 sources) ────────────────────────
-        await _emit(job_id, "fetching", "📡 Collecting data from public sources...", 12)
+        await _emit(job_id, "fetching", "Collecting Company Data...", 12)
 
         fetch_results = await asyncio.gather(
             asyncio.wait_for(retrieve_github(company_name), timeout=20),
@@ -129,7 +129,7 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
         logger.info("Data fetch complete: %s", source_status)
         
         successful = sum(1 for s in source_status.values() if s == "ok")
-        await _emit(job_id, "fetching", f"📡 {successful}/7 data sources collected successfully", 22)
+        await _emit(job_id, "fetching", f"Collecting Company Data...", 22)
 
         # ── Step 3: Web crawling ──────────────────────────────────────────────
         crawled_pages: list[dict[str, str]] = []
@@ -157,7 +157,7 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
             await _emit(job_id, "crawling", "⚠️ No website found, skipping crawl...", 35)
 
         # ── Step 4: Build RAG knowledge base ──────────────────────────────────
-        await _emit(job_id, "indexing", "🧠 Building knowledge base...", 40)
+        await _emit(job_id, "indexing", "Launching AI Agents...", 40)
 
         all_docs: list[dict[str, str]] = []
         all_docs.extend(crawled_pages)
@@ -197,14 +197,13 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
                     timeout=60,
                 )
                 logger.info("Indexed %d chunks for RAG", chunks_count)
-                await _emit(job_id, "indexing", f"🧠 Indexed {chunks_count} knowledge chunks", 45)
+                await _emit(job_id, "indexing", "Launching AI Agents...", 45)
             except asyncio.TimeoutError:
                 logger.warning("RAG indexing timed out — chat will still work from report data")
             except Exception as exc:
                 logger.warning("RAG indexing failed (non-fatal): %s", exc)
         
         # ── Step 5: AI Report Generation (3 batched phases) ──────────────────
-        await _emit(job_id, "analyzing", "✨ AI analyzing company overview & financials...", 50)
 
         # The report generator now runs in 3 sequential batches with internal progress
         # We update progress at the end of each batch
@@ -213,7 +212,7 @@ async def run_research_pipeline(job: ResearchJob) -> CompanyReport:
 
         sections = await generate_full_report_sections(company_name, raw_data, emit_cb=on_progress)
 
-        await _emit(job_id, "synthesizing", "📊 Synthesizing all intelligence...", 90)
+        await _emit(job_id, "synthesizing", "Generating Final Report...", 90)
 
         # ── Step 6: Assemble final report ─────────────────────────────────────
         elapsed = round(time.time() - start_time, 2)

@@ -37,17 +37,17 @@ function confidenceTag(conf: string | null | undefined) {
     medium: { label: 'Estimated', color: 'text-nexora-amber bg-nexora-amber/10' },
     low: { label: 'Unverified', color: 'text-nexora-orange bg-nexora-orange/10' },
   }
-  const entry = map[conf] ?? { label: conf, color: 'text-nexora-mediumgray bg-nexora-warmwhite' }
+  const entry = map[conf] ?? { label: conf, color: 'text-nexora-mediumgray bg-white/5' }
   return <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${entry.color}`}>{entry.label}</span>
 }
 
 function EmptyState({ title, desc }: { title: string; desc: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-14 h-14 bg-nexora-warmwhite rounded-2xl flex items-center justify-center mb-4 border border-black/5">
+      <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center mb-4 border border-white/10">
         <img src="/owl.png" alt="Nexora" className="w-8 h-8 object-contain opacity-40 grayscale" />
       </div>
-      <h4 className="font-bold text-nexora-charcoal mb-1">{title}</h4>
+      <h4 className="font-bold text-white mb-1">{title}</h4>
       <p className="text-sm text-nexora-mediumgray max-w-xs">{desc}</p>
     </div>
   )
@@ -77,7 +77,7 @@ function ScoreRing({ score, label, color = '#22C55E' }: { score: number; label: 
             strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-lg font-bold text-nexora-charcoal">{score}</span>
+          <span className="text-lg font-bold text-white">{score}</span>
         </div>
       </div>
       <p className="text-[10px] font-bold text-nexora-mediumgray text-center mt-1 uppercase tracking-wide leading-tight max-w-[70px]">{label}</p>
@@ -104,8 +104,8 @@ function OverviewTab({ report }: { report: Report }) {
     <div className="space-y-6">
       {/* Executive Summary */}
       {aiSummary?.executive_summary && (
-        <div className="bg-white rounded-3xl p-7 border border-black/5">
-          <h3 className="font-bold text-nexora-charcoal mb-3 flex items-center gap-2">
+        <div className="glass-container glass-green-border rounded-3xl p-7">
+          <h3 className="font-bold text-white mb-3 flex items-center gap-2">
             <Brain className="w-4 h-4 text-nexora-emerald" /> Executive Summary
           </h3>
           <p className="text-sm text-nexora-mediumgray leading-relaxed">{aiSummary.executive_summary}</p>
@@ -119,9 +119,9 @@ function OverviewTab({ report }: { report: Report }) {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Funding Rounds chart */}
-        <div className="bg-white rounded-3xl p-6 border border-black/5">
+        <div className="glass-container glass-green-border rounded-3xl p-6">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-bold text-nexora-charcoal flex items-center gap-2">
+            <h3 className="font-bold text-white flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-nexora-amber" /> Funding History
             </h3>
             {confidenceTag(rev?.revenue_confidence)}
@@ -150,18 +150,18 @@ function OverviewTab({ report }: { report: Report }) {
           <div className="mt-4 grid grid-cols-2 gap-4">
             <div>
               <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-1">Total Funding</p>
-              <p className="font-bold text-nexora-charcoal">{fmtUSD(rev?.total_funding_usd)}</p>
+              <p className="font-bold text-white">{fmtUSD(rev?.total_funding_usd)}</p>
             </div>
             <div>
               <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-1">Valuation</p>
-              <p className="font-bold text-nexora-charcoal">{fmtUSD(rev?.valuation_usd)}</p>
+              <p className="font-bold text-white">{fmtUSD(rev?.valuation_usd)}</p>
             </div>
           </div>
         </div>
 
         {/* Business Model */}
-        <div className="bg-white rounded-3xl p-6 border border-black/5">
-          <h3 className="font-bold text-nexora-charcoal mb-4 flex items-center gap-2">
+        <div className="glass-container glass-green-border rounded-3xl p-6">
+          <h3 className="font-bold text-white mb-4 flex items-center gap-2">
             <Layers className="w-4 h-4 text-nexora-orange" /> Business Model
           </h3>
           {report.business_model?.summary ? (
@@ -172,7 +172,7 @@ function OverviewTab({ report }: { report: Report }) {
               <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-3">Revenue Streams</p>
               <div className="space-y-2">
                 {businessModelItems.map((stream: string, i: number) => (
-                  <div key={i} className="flex items-center gap-3 p-2.5 bg-nexora-warmwhite rounded-xl text-sm text-nexora-charcoal font-medium">
+                  <div key={i} className="flex items-center gap-3 p-2.5 bg-white/5 rounded-xl text-sm text-white font-medium">
                     <span className="w-2 h-2 rounded-full bg-nexora-emerald shrink-0" />
                     {stream}
                   </div>
@@ -188,14 +188,14 @@ function OverviewTab({ report }: { report: Report }) {
 
       {/* Quick Competitors Preview */}
       {(report.competitors ?? []).length > 0 && (
-        <div className="bg-white rounded-3xl p-6 border border-black/5">
-          <h3 className="font-bold text-nexora-charcoal mb-5 flex items-center gap-2">
+        <div className="glass-container glass-green-border rounded-3xl p-6">
+          <h3 className="font-bold text-white mb-5 flex items-center gap-2">
             <Target className="w-4 h-4 text-nexora-orange" /> Top Competitors
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {report.competitors.slice(0, 4).map((comp: any, i: number) => (
-              <div key={i} className="p-4 bg-nexora-warmwhite rounded-2xl border border-black/5">
-                <p className="font-bold text-nexora-charcoal text-sm mb-1 truncate">{comp.name}</p>
+              <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                <p className="font-bold text-white text-sm mb-1 truncate">{comp.name}</p>
                 <p className="text-xs text-nexora-mediumgray truncate">{comp.overview?.substring(0, 60) ?? 'Competitor'}</p>
               </div>
             ))}
@@ -233,7 +233,7 @@ function FinancialsTab({ report }: { report: Report }) {
       {!isPublic && (
         <div className="flex items-start gap-3 p-4 bg-nexora-amber/10 border border-nexora-amber/20 rounded-2xl">
           <Info className="w-4 h-4 text-nexora-gold shrink-0 mt-0.5" />
-          <p className="text-sm text-nexora-charcoal">
+          <p className="text-sm text-white">
             <strong>Private company:</strong> Financial data is estimated from public sources. Values are labeled with confidence levels. No data is fabricated.
           </p>
         </div>
@@ -242,9 +242,9 @@ function FinancialsTab({ report }: { report: Report }) {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statsGrid.map((stat, i) => (
-          <div key={i} className="bg-white rounded-2xl p-5 border border-black/5">
+          <div key={i} className="glass-container glass-green-border rounded-2xl p-5">
             <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-2">{stat.label}</p>
-            <p className="text-xl font-bold text-nexora-charcoal">{stat.value}</p>
+            <p className="text-xl font-bold text-white">{stat.value}</p>
             {'conf' in stat && stat.conf && <div className="mt-1">{confidenceTag(stat.conf)}</div>}
           </div>
         ))}
@@ -252,8 +252,8 @@ function FinancialsTab({ report }: { report: Report }) {
 
       {/* Funding Timeline Chart */}
       {fundingTimeline.length > 0 && (
-        <div className="bg-white rounded-3xl p-7 border border-black/5">
-          <h3 className="font-bold text-nexora-charcoal mb-5">Funding Rounds Timeline</h3>
+        <div className="glass-container glass-green-border rounded-3xl p-7">
+          <h3 className="font-bold text-white mb-5">Funding Rounds Timeline</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={fundingTimeline}>
@@ -272,7 +272,7 @@ function FinancialsTab({ report }: { report: Report }) {
                 <span className="text-xs font-bold text-nexora-mediumgray pt-0.5 w-32 shrink-0">{round.name}</span>
                 <div className="flex flex-wrap gap-1.5">
                   {round.investors.map((inv: string, j: number) => (
-                    <span key={j} className="text-[11px] px-2.5 py-1 bg-nexora-warmwhite rounded-full text-nexora-charcoal font-medium border border-black/5">{inv}</span>
+                    <span key={j} className="text-[11px] px-2.5 py-1 bg-white/5 rounded-full text-white font-medium border border-white/10">{inv}</span>
                   ))}
                 </div>
               </div>
@@ -305,14 +305,14 @@ function CompetitorsTab({ report }: { report: Report }) {
   return (
     <div className="space-y-6">
       {narrative?.summary && (
-        <div className="bg-white rounded-3xl p-7 border border-black/5 flex flex-col xl:flex-row gap-8 items-center">
+        <div className="glass-container glass-green-border rounded-3xl p-7 flex flex-col xl:flex-row gap-8 items-center">
           <div className="flex-1">
-            <h3 className="font-bold text-nexora-charcoal mb-3">Competitive Landscape</h3>
+            <h3 className="font-bold text-white mb-3">Competitive Landscape</h3>
             <p className="text-sm text-nexora-mediumgray leading-relaxed">{narrative.summary}</p>
             {narrative.moat_analysis && (
               <div className="mt-4 p-4 bg-nexora-emerald/5 border border-nexora-emerald/20 rounded-2xl">
                 <p className="text-xs font-bold text-nexora-forest uppercase tracking-wider mb-1">Competitive Moat</p>
-                <p className="text-sm text-nexora-charcoal">{narrative.moat_analysis}</p>
+                <p className="text-sm text-white">{narrative.moat_analysis}</p>
               </div>
             )}
           </div>
@@ -339,11 +339,11 @@ function CompetitorsTab({ report }: { report: Report }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}
-            className="bg-white rounded-3xl p-6 border border-black/5 hover:border-nexora-emerald/30 hover:shadow-premium-hover transition-all"
+            className="glass-container glass-green-border rounded-3xl p-6 hover:border-nexora-emerald/30 hover:shadow-premium-hover transition-all"
           >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h4 className="font-bold text-nexora-charcoal">{comp.name}</h4>
+                <h4 className="font-bold text-white">{comp.name}</h4>
                 {comp.website && (
                   <a href={comp.website.startsWith('http') ? comp.website : `https://${comp.website}`} target="_blank" rel="noreferrer"
                     className="text-xs text-nexora-emerald hover:underline flex items-center gap-1 mt-0.5">
@@ -351,7 +351,7 @@ function CompetitorsTab({ report }: { report: Report }) {
                   </a>
                 )}
               </div>
-              {comp.founded_year && <span className="text-xs font-bold text-nexora-mediumgray bg-nexora-warmwhite px-2 py-1 rounded-full">Est. {comp.founded_year}</span>}
+              {comp.founded_year && <span className="text-xs font-bold text-nexora-mediumgray bg-white/5 px-2 py-1 rounded-full">Est. {comp.founded_year}</span>}
             </div>
 
             {comp.overview && <p className="text-xs text-nexora-mediumgray leading-relaxed mb-4">{comp.overview}</p>}
@@ -361,7 +361,7 @@ function CompetitorsTab({ report }: { report: Report }) {
                 <p className="text-[10px] font-bold text-nexora-emerald uppercase tracking-wider mb-2">Strengths</p>
                 <ul className="space-y-1">
                   {comp.advantages.slice(0, 3).map((a: string, j: number) => (
-                    <li key={j} className="text-xs text-nexora-charcoal flex items-start gap-1.5">
+                    <li key={j} className="text-xs text-white flex items-start gap-1.5">
                       <CheckCircle className="w-3 h-3 text-nexora-emerald shrink-0 mt-0.5" />{a}
                     </li>
                   ))}
@@ -374,7 +374,7 @@ function CompetitorsTab({ report }: { report: Report }) {
                 <p className="text-[10px] font-bold text-nexora-orange uppercase tracking-wider mb-2">Weaknesses</p>
                 <ul className="space-y-1">
                   {comp.weaknesses.slice(0, 3).map((w: string, j: number) => (
-                    <li key={j} className="text-xs text-nexora-charcoal flex items-start gap-1.5">
+                    <li key={j} className="text-xs text-white flex items-start gap-1.5">
                       <XCircle className="w-3 h-3 text-nexora-orange shrink-0 mt-0.5" />{w}
                     </li>
                   ))}
@@ -382,9 +382,9 @@ function CompetitorsTab({ report }: { report: Report }) {
               </div>
             )}
 
-            <div className="mt-4 pt-4 border-t border-black/5 grid grid-cols-2 gap-3">
-              {comp.employee_count && <div><p className="text-[10px] text-nexora-mediumgray font-bold uppercase">Employees</p><p className="text-sm font-bold text-nexora-charcoal">{comp.employee_count}</p></div>}
-              {comp.revenue_display && <div><p className="text-[10px] text-nexora-mediumgray font-bold uppercase">Revenue</p><p className="text-sm font-bold text-nexora-charcoal">{comp.revenue_display}</p></div>}
+            <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 gap-3">
+              {comp.employee_count && <div><p className="text-[10px] text-nexora-mediumgray font-bold uppercase">Employees</p><p className="text-sm font-bold text-white">{comp.employee_count}</p></div>}
+              {comp.revenue_display && <div><p className="text-[10px] text-nexora-mediumgray font-bold uppercase">Revenue</p><p className="text-sm font-bold text-white">{comp.revenue_display}</p></div>}
             </div>
           </motion.div>
         ))}
@@ -409,13 +409,13 @@ function SWOTTab({ report }: { report: Report }) {
   return (
     <div className="space-y-6">
       {report.market_analysis?.market_position && (
-        <div className="bg-white rounded-3xl p-6 border border-black/5">
-          <h3 className="font-bold text-nexora-charcoal mb-2">Market Position</h3>
+        <div className="glass-container glass-green-border rounded-3xl p-6">
+          <h3 className="font-bold text-white mb-2">Market Position</h3>
           <p className="text-sm text-nexora-mediumgray">{report.market_analysis.market_position}</p>
           {report.market_analysis.market_size_usd && (
             <div className="mt-3 flex items-center gap-2">
               <span className="text-xs font-bold text-nexora-mediumgray uppercase tracking-wider">Market Size:</span>
-              <span className="text-sm font-bold text-nexora-charcoal">{report.market_analysis.market_size_usd}</span>
+              <span className="text-sm font-bold text-white">{report.market_analysis.market_size_usd}</span>
             </div>
           )}
         </div>
@@ -425,7 +425,7 @@ function SWOTTab({ report }: { report: Report }) {
         {categories.map((cat) => {
           const Icon = cat.icon
           return (
-            <div key={cat.key} className={`bg-${cat.bg} rounded-3xl p-6 border border-black/5`}>
+            <div key={cat.key} className={`bg-${cat.bg} rounded-3xl p-6 border border-white/10`}>
               <div className="flex items-center gap-2 mb-5">
                 <Icon className={`w-5 h-5 text-${cat.color}`} />
                 <h3 className={`font-bold text-${cat.color} text-lg font-syne`}>{cat.label}</h3>
@@ -434,7 +434,7 @@ function SWOTTab({ report }: { report: Report }) {
               {cat.items.length > 0 ? (
                 <ul className="space-y-2.5">
                   {cat.items.map((item: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-nexora-charcoal">
+                    <li key={i} className="flex items-start gap-2 text-sm text-white">
                       <ChevronRight className={`w-3.5 h-3.5 text-${cat.color} shrink-0 mt-0.5`} />
                       {item}
                     </li>
@@ -449,8 +449,8 @@ function SWOTTab({ report }: { report: Report }) {
       </div>
 
       {report.market_analysis?.key_differentiators?.length > 0 && (
-        <div className="bg-white rounded-3xl p-6 border border-black/5">
-          <h3 className="font-bold text-nexora-charcoal mb-4">Key Differentiators</h3>
+        <div className="glass-container glass-green-border rounded-3xl p-6">
+          <h3 className="font-bold text-white mb-4">Key Differentiators</h3>
           <div className="flex flex-wrap gap-2">
             {report.market_analysis.key_differentiators.map((d: string, i: number) => (
               <span key={i} className="px-3 py-1.5 bg-nexora-emerald/10 text-nexora-forest text-sm font-semibold rounded-full">{d}</span>
@@ -481,18 +481,18 @@ function TechTab({ report }: { report: Report }) {
 
   return (
     <div className="space-y-5">
-      <div className="bg-white rounded-3xl p-6 border border-black/5">
-        <h3 className="font-bold text-nexora-charcoal mb-6 flex items-center gap-2">
+      <div className="glass-container glass-green-border rounded-3xl p-6">
+        <h3 className="font-bold text-white mb-6 flex items-center gap-2">
           <Cpu className="w-4 h-4 text-nexora-emerald" /> Technology Stack
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sections.map((section, i) => (
             <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
-              className="p-4 bg-nexora-warmwhite rounded-2xl border border-black/5">
+              className="p-4 bg-white/5 rounded-2xl border border-white/10">
               <p className={`text-[10px] font-bold uppercase tracking-widest text-${section.color} mb-3`}>{section.label}</p>
               <div className="flex flex-wrap gap-2">
                 {section.items.map((tech: string, j: number) => (
-                  <span key={j} className="text-xs font-semibold px-2.5 py-1 bg-white rounded-full text-nexora-charcoal border border-black/5 shadow-sm">{tech}</span>
+                  <span key={j} className="text-xs font-semibold px-2.5 py-1 bg-white rounded-full text-white border border-white/10 shadow-sm">{tech}</span>
                 ))}
               </div>
             </motion.div>
@@ -510,7 +510,7 @@ function NewsTab({ report }: { report: Report }) {
   const sentimentColor: Record<string, string> = {
     positive: 'text-nexora-emerald bg-nexora-emerald/10',
     negative: 'text-rose-600 bg-rose-100',
-    neutral: 'text-nexora-mediumgray bg-nexora-warmwhite',
+    neutral: 'text-nexora-mediumgray bg-white/5',
   }
 
   return (
@@ -524,14 +524,14 @@ function NewsTab({ report }: { report: Report }) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
-          className="flex items-start gap-5 bg-white rounded-3xl p-6 border border-black/5 hover:border-nexora-emerald/30 hover:shadow-premium-hover transition-all group"
+          className="flex items-start gap-5 glass-container glass-green-border rounded-3xl p-6 hover:border-nexora-emerald/30 hover:shadow-premium-hover transition-all group"
         >
-          <div className="w-12 h-12 bg-nexora-warmwhite rounded-2xl flex items-center justify-center shrink-0 border border-black/5 group-hover:bg-nexora-emerald/10 transition-colors">
+          <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center shrink-0 border border-white/10 group-hover:bg-nexora-emerald/10 transition-colors">
             <Newspaper className="w-5 h-5 text-nexora-mediumgray group-hover:text-nexora-emerald transition-colors" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3 mb-1.5">
-              <h4 className="font-bold text-nexora-charcoal text-sm group-hover:text-nexora-emerald transition-colors leading-tight">{item.title}</h4>
+              <h4 className="font-bold text-white text-sm group-hover:text-nexora-emerald transition-colors leading-tight">{item.title}</h4>
               <ArrowUpRight className="w-4 h-4 text-nexora-mediumgray shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
             {item.summary && <p className="text-xs text-nexora-mediumgray leading-relaxed mb-2 line-clamp-2">{item.summary}</p>}
@@ -543,7 +543,7 @@ function NewsTab({ report }: { report: Report }) {
                 </span>
               )}
               {item.sentiment && (
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${sentimentColor[item.sentiment] ?? 'text-nexora-mediumgray bg-nexora-warmwhite'}`}>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${sentimentColor[item.sentiment] ?? 'text-nexora-mediumgray bg-white/5'}`}>
                   {item.sentiment}
                 </span>
               )}
@@ -561,22 +561,22 @@ function TimelineTab({ report }: { report: Report }) {
 
   const typeColor: Record<string, string> = {
     founding: 'bg-nexora-emerald text-white',
-    funding: 'bg-nexora-amber text-nexora-charcoal',
+    funding: 'bg-nexora-amber text-white',
     product: 'bg-nexora-emerald text-white',
     acquisition: 'bg-nexora-orange text-white',
-    ipo: 'bg-nexora-gold text-nexora-charcoal',
+    ipo: 'bg-nexora-gold text-white',
     expansion: 'bg-nexora-forest text-white',
     partnership: 'bg-nexora-orange text-white',
-    other: 'bg-nexora-lightgray text-nexora-charcoal',
+    other: 'bg-nexora-lightgray text-white',
   }
 
   return (
-    <div className="bg-white rounded-3xl p-7 border border-black/5">
-      <h3 className="font-bold text-nexora-charcoal mb-8 flex items-center gap-2">
+    <div className="glass-container glass-green-border rounded-3xl p-7">
+      <h3 className="font-bold text-white mb-8 flex items-center gap-2">
         <GitBranch className="w-4 h-4 text-nexora-emerald" /> Company Timeline
       </h3>
       <div className="relative">
-        <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-nexora-warmwhite" />
+        <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-white/5" />
         <div className="space-y-6">
           {milestones.map((m: any, i: number) => (
             <motion.div
@@ -589,9 +589,9 @@ function TimelineTab({ report }: { report: Report }) {
               <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 z-10 text-[10px] font-bold ${typeColor[m.milestone_type] ?? typeColor.other}`}>
                 {m.year}
               </div>
-              <div className="bg-nexora-warmwhite rounded-2xl p-4 flex-1 border border-black/5">
+              <div className="bg-white/5 rounded-2xl p-4 flex-1 border border-white/10">
                 <div className="flex items-start justify-between gap-2">
-                  <h4 className="font-bold text-nexora-charcoal text-sm">{m.title}</h4>
+                  <h4 className="font-bold text-white text-sm">{m.title}</h4>
                   <span className="text-[10px] text-nexora-mediumgray font-bold uppercase shrink-0">{m.milestone_type}</span>
                 </div>
                 {m.description && <p className="text-xs text-nexora-mediumgray mt-1 leading-relaxed">{m.description}</p>}
@@ -635,8 +635,8 @@ function AIInsightsTab({ report }: { report: Report }) {
   return (
     <div className="space-y-6">
       {/* Scores */}
-      <div className="bg-white rounded-3xl p-7 border border-black/5">
-        <h3 className="font-bold text-nexora-charcoal mb-6 flex items-center gap-2">
+      <div className="glass-container glass-green-border rounded-3xl p-7">
+        <h3 className="font-bold text-white mb-6 flex items-center gap-2">
           <Brain className="w-4 h-4 text-nexora-emerald" /> AI Intelligence Scores
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
@@ -668,7 +668,7 @@ function AIInsightsTab({ report }: { report: Report }) {
             </h3>
             <ul className="space-y-2.5">
               {report.ai_summary.future_opportunities.map((o: string, i: number) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-nexora-charcoal">
+                <li key={i} className="flex items-start gap-2 text-sm text-white">
                   <ChevronRight className="w-3.5 h-3.5 text-nexora-emerald shrink-0 mt-0.5" />{o}
                 </li>
               ))}
@@ -682,7 +682,7 @@ function AIInsightsTab({ report }: { report: Report }) {
             </h3>
             <ul className="space-y-2.5">
               {report.ai_summary.key_risks.map((r: string, i: number) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-nexora-charcoal">
+                <li key={i} className="flex items-start gap-2 text-sm text-white">
                   <ChevronRight className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />{r}
                 </li>
               ))}
@@ -693,16 +693,16 @@ function AIInsightsTab({ report }: { report: Report }) {
 
       {/* Strategic Recommendations */}
       {recs.length > 0 && (
-        <div className="bg-white rounded-3xl p-7 border border-black/5">
-          <h3 className="font-bold text-nexora-charcoal mb-5">Strategic Recommendations</h3>
+        <div className="glass-container glass-green-border rounded-3xl p-7">
+          <h3 className="font-bold text-white mb-5">Strategic Recommendations</h3>
           <div className="space-y-4">
             {recs.map((rec: any, i: number) => (
-              <div key={i} className="p-4 bg-nexora-warmwhite rounded-2xl border border-black/5">
+              <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/10">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-bold text-nexora-charcoal text-sm">{rec.title}</h4>
+                  <h4 className="font-bold text-white text-sm">{rec.title}</h4>
                   <div className="flex items-center gap-2">
                     {rec.timeframe && <span className="text-[10px] text-nexora-mediumgray font-bold">{rec.timeframe}</span>}
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${priorityColor[rec.priority] ?? 'bg-nexora-warmwhite text-nexora-mediumgray'}`}>{rec.priority}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${priorityColor[rec.priority] ?? 'bg-white/5 text-nexora-mediumgray'}`}>{rec.priority}</span>
                   </div>
                 </div>
                 <p className="text-xs text-nexora-mediumgray leading-relaxed">{rec.description}</p>
@@ -732,30 +732,30 @@ function GeographyTab({ report }: { report: Report }) {
 
   return (
     <div className="space-y-5">
-      <div className="bg-white rounded-3xl p-7 border border-black/5">
-        <h3 className="font-bold text-nexora-charcoal mb-6 flex items-center gap-2">
+      <div className="glass-container glass-green-border rounded-3xl p-7">
+        <h3 className="font-bold text-white mb-6 flex items-center gap-2">
           <Map className="w-4 h-4 text-nexora-emerald" /> Geographic Presence
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {geo.headquarters_country && (
-            <div className="p-4 bg-nexora-warmwhite rounded-2xl border border-black/5">
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
               <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-1">HQ Country</p>
-              <p className="font-bold text-nexora-charcoal">{geo.headquarters_country}</p>
+              <p className="font-bold text-white">{geo.headquarters_country}</p>
             </div>
           )}
           {geo.headquarters_city && (
-            <div className="p-4 bg-nexora-warmwhite rounded-2xl border border-black/5">
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
               <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-1">HQ City</p>
-              <p className="font-bold text-nexora-charcoal">{geo.headquarters_city}</p>
+              <p className="font-bold text-white">{geo.headquarters_city}</p>
             </div>
           )}
-          <div className="p-4 bg-nexora-warmwhite rounded-2xl border border-black/5">
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
             <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-1">Countries</p>
-            <p className="font-bold text-nexora-charcoal">{geo.countries_present?.length ?? 0}</p>
+            <p className="font-bold text-white">{geo.countries_present?.length ?? 0}</p>
           </div>
-          <div className="p-4 bg-nexora-warmwhite rounded-2xl border border-black/5">
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
             <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-1">Global</p>
-            <p className="font-bold text-nexora-charcoal">{geo.has_global_presence ? 'Yes' : 'No'}</p>
+            <p className="font-bold text-white">{geo.has_global_presence ? 'Yes' : 'No'}</p>
           </div>
         </div>
 
@@ -764,7 +764,7 @@ function GeographyTab({ report }: { report: Report }) {
             <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-3">Countries of Operation</p>
             <div className="flex flex-wrap gap-2">
               {geo.countries_present.map((c: string, i: number) => (
-                <span key={i} className="text-sm px-3 py-1.5 bg-nexora-warmwhite rounded-full border border-black/5 text-nexora-charcoal font-medium">
+                <span key={i} className="text-sm px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-white font-medium">
                   {c}
                 </span>
               ))}
@@ -788,7 +788,7 @@ function GeographyTab({ report }: { report: Report }) {
         {geo.expansion_trajectory && (
           <div className="mt-5 p-4 bg-nexora-emerald/5 rounded-2xl border border-nexora-emerald/20">
             <p className="text-xs font-bold text-nexora-forest uppercase tracking-wider mb-1">Expansion Trajectory</p>
-            <p className="text-sm text-nexora-charcoal">{geo.expansion_trajectory}</p>
+            <p className="text-sm text-white">{geo.expansion_trajectory}</p>
           </div>
         )}
       </div>
@@ -850,7 +850,7 @@ export default function ReportDashboard() {
       <div className="w-16 h-16 bg-rose-100 rounded-3xl flex items-center justify-center mb-4">
         <AlertCircle className="w-7 h-7 text-rose-500" />
       </div>
-      <h2 className="text-2xl font-bold text-nexora-charcoal mb-2">Report Not Found</h2>
+      <h2 className="text-2xl font-bold text-white mb-2">Report Not Found</h2>
       <p className="text-nexora-mediumgray mb-4">{error}</p>
       <button onClick={() => router.push('/')} className="px-6 py-3 bg-nexora-emerald text-white rounded-full font-bold hover:bg-nexora-forest transition-colors">
         Go Home
@@ -879,21 +879,21 @@ export default function ReportDashboard() {
       className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-8"
     >
       {/* ── Report Header ── */}
-      <div className="bg-white rounded-3xl p-6 shadow-sm border border-black/5 mb-6">
+      <div className="glass-container glass-green-border rounded-3xl p-6 shadow-glass mb-6">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
           {/* Company identity */}
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 bg-nexora-warmwhite rounded-2xl flex items-center justify-center shrink-0 border border-black/5 shadow-sm overflow-hidden">
+            <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center shrink-0 border border-white/10 shadow-sm overflow-hidden">
               {report.overview?.logo_url ? (
                 <img src={report.overview.logo_url} alt={report.company_name} className="w-full h-full object-contain p-2" />
               ) : (
-                <span className="text-2xl font-syne font-bold text-nexora-charcoal">
+                <span className="text-2xl font-syne font-bold text-white">
                   {report.company_name.charAt(0)}
                 </span>
               )}
             </div>
             <div>
-              <h1 className="text-2xl font-syne font-bold text-nexora-charcoal tracking-tight">{report.company_name}</h1>
+              <h1 className="text-2xl font-syne font-bold text-white tracking-tight">{report.company_name}</h1>
               <div className="flex flex-wrap items-center gap-3 mt-1.5 text-sm text-nexora-mediumgray font-medium">
                 {report.overview?.industry && (
                   <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5" />{report.overview.industry}</span>
@@ -917,32 +917,32 @@ export default function ReportDashboard() {
           {/* Action buttons + key stats */}
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <button className="flex items-center gap-2 px-4 py-2 border border-black/10 rounded-full text-sm font-bold text-nexora-charcoal hover:bg-nexora-warmwhite transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 border border-white/20 rounded-full text-sm font-bold text-white hover:bg-white/10/5 transition-colors">
                 <Bookmark className="w-4 h-4" /> Save
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 border border-black/10 rounded-full text-sm font-bold text-nexora-charcoal hover:bg-nexora-warmwhite transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 border border-white/20 rounded-full text-sm font-bold text-white hover:bg-white/10/5 transition-colors">
                 <Share2 className="w-4 h-4" /> Share
               </button>
               <a
                 href={`/api/report/${id}/export/pdf`}
-                className="flex items-center gap-2 px-4 py-2 bg-nexora-charcoal text-white rounded-full text-sm font-bold hover:bg-nexora-emerald transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white shadow-glass rounded-full text-sm font-bold hover:bg-nexora-emerald transition-colors"
               >
                 <Download className="w-4 h-4" /> Export
               </a>
             </div>
 
-            <div className="flex items-center gap-5 pl-4 border-l border-black/10">
+            <div className="flex items-center gap-5 pl-4 border-l border-white/20">
               <div>
                 <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider">Revenue</p>
-                <p className="text-base font-bold text-nexora-charcoal truncate w-32" title={rev?.annual_revenue_display ?? fmtUSD(rev?.annual_revenue_usd)}>{rev?.annual_revenue_display ?? fmtUSD(rev?.annual_revenue_usd)}</p>
+                <p className="text-base font-bold text-white truncate w-32" title={rev?.annual_revenue_display ?? fmtUSD(rev?.annual_revenue_usd)}>{rev?.annual_revenue_display ?? fmtUSD(rev?.annual_revenue_usd)}</p>
               </div>
               <div>
                 <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider">Funding</p>
-                <p className="text-base font-bold text-nexora-charcoal truncate w-32" title={fmtUSD(rev?.total_funding_usd)}>{fmtUSD(rev?.total_funding_usd)}</p>
+                <p className="text-base font-bold text-white truncate w-32" title={fmtUSD(rev?.total_funding_usd)}>{fmtUSD(rev?.total_funding_usd)}</p>
               </div>
               <div>
                 <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider">Competitors</p>
-                <p className="text-base font-bold text-nexora-charcoal">{report.competitors?.length ?? 0}</p>
+                <p className="text-base font-bold text-white">{report.competitors?.length ?? 0}</p>
               </div>
               <div>
                 <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider">AI Health</p>
@@ -963,8 +963,8 @@ export default function ReportDashboard() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-2xl whitespace-nowrap transition-all ${
                 activeTab === tab.id
-                  ? 'bg-nexora-charcoal text-white shadow-sm'
-                  : 'text-nexora-mediumgray hover:text-nexora-charcoal hover:bg-white'
+                  ? 'bg-white/10 text-white shadow-glass shadow-sm'
+                  : 'text-nexora-mediumgray hover:text-white hover:bg-white/10'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />

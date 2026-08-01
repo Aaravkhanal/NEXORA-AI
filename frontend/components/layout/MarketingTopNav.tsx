@@ -15,66 +15,54 @@ const navLinks = [
 
 export function MarketingTopNav() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
 
-  useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 10)
-    window.addEventListener('scroll', handler)
-    return () => window.removeEventListener('scroll', handler)
-  }, [])
+  const navLinks = [
+    { label: 'Features', href: '/features' },
+    { label: 'Solutions', href: '/solutions' },
+    { label: 'Resources', href: '/resources' },
+    { label: 'About', href: '/about' },
+  ]
 
   return (
     <>
-      <nav className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-xl border-b border-black/5 shadow-sm' : 'bg-nexora-warmwhite border-b border-transparent'}`}>
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-
-          {/* Logo + Brand Name */}
-          <Link href="/" className="flex items-center gap-3 group shrink-0">
-            <img
-              src="/logo.png"
-              alt="Nexora Intelligence"
-              className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
-            />
-            <span className="font-syne font-bold text-nexora-charcoal text-lg tracking-tight hidden sm:block">
-              Nexora <span className="text-nexora-emerald">Intelligence</span>
+      <nav className="sticky top-0 z-50 w-full bg-nexora-warmwhite/90 backdrop-blur-md border-b border-white/5">
+        <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+          
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <div className="w-8 h-8 flex items-center justify-center">
+              <img src="/logo.png" alt="Nexora AI" className="h-full object-contain" />
+            </div>
+            <span className="font-syne font-bold text-lg text-nexora-charcoal tracking-tight">
+              Nexora AI
             </span>
           </Link>
 
-          {/* Desktop Nav Links - Centered */}
-          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-6">
-            {navLinks.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="relative px-2 py-2 text-[15px] font-semibold text-nexora-charcoal group"
-              >
-                <span className="relative z-10 group-hover:text-nexora-emerald transition-colors duration-300">
-                  {link.label}
-                </span>
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-nexora-emerald scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full" />
-              </Link>
-            ))}
+          {/* Desktop Description - Centered */}
+          <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center justify-center w-full max-w-2xl px-4 pointer-events-none">
+            <p className="text-[12px] md:text-[13px] text-nexora-mediumgray text-center font-medium leading-snug">
+              AI-Powered Company Intelligence Platform delivering collaborative multi-agent business research, financial insights, risk analysis, and strategic intelligence.
+            </p>
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
-            <button className="px-5 py-2.5 text-sm font-bold text-nexora-charcoal hover:bg-black/5 rounded-full transition-colors">
+            <button className="text-[14px] font-medium text-nexora-mediumgray hover:text-white transition-colors">
               Log in
             </button>
             <Link
               href="/"
-              className="px-6 py-2.5 text-sm font-bold text-white bg-nexora-charcoal hover:bg-nexora-emerald rounded-full transition-colors shadow-premium hover:shadow-premium-hover"
+              className="px-5 py-2 text-[14px] font-medium text-white bg-nexora-emerald hover:bg-nexora-forest rounded-full transition-all"
             >
               Get Started
             </Link>
           </div>
 
-          {/* Mobile Hamburger */}
-          <button
+          {/* Mobile menu button */}
+          <button 
             onClick={() => setMobileOpen(v => !v)}
-            className="md:hidden p-2 text-nexora-charcoal hover:bg-black/5 rounded-full transition-colors"
-            aria-label="Toggle menu"
+            className="md:hidden p-2 text-nexora-charcoal"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -89,7 +77,7 @@ export function MarketingTopNav() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-20 z-40 bg-white/98 backdrop-blur-xl border-b border-black/5 shadow-glass md:hidden"
+            className="fixed inset-x-0 top-16 z-40 bg-white/98 backdrop-blur-xl border-b border-black/5 shadow-sm md:hidden"
           >
             <div className="max-w-7xl mx-auto px-6 py-4 space-y-1">
               {navLinks.map(link => (
@@ -108,7 +96,7 @@ export function MarketingTopNav() {
                 </button>
                 <Link
                   href="/"
-                  className="w-full px-5 py-3 text-sm font-bold text-white text-center bg-nexora-charcoal hover:bg-nexora-emerald rounded-xl transition-colors"
+                  className="w-full px-5 py-3 text-sm font-bold text-white text-center bg-nexora-emerald hover:bg-nexora-forest rounded-xl transition-colors"
                 >
                   Get Started
                 </Link>
