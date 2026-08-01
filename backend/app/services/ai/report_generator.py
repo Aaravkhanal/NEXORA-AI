@@ -46,12 +46,9 @@ logger = get_logger(__name__)
 
 _SECTION_TIMEOUT = 120.0  # Max seconds per section
 
-_SYSTEM_PROMPT = """You are an elite AI Agent at a top-tier global research firm.
+_SYSTEM_PROMPT = """You are an elite company intelligence AI Agent at a top-tier global research firm.
 Your analysis must be precise, factual, evidence-based, and structured.
-CRITICAL RULE: Every factual statement MUST be backed by retrieved evidence. If sufficient information cannot be verified from the context, you MUST explicitly output "No verified information found" instead of fabricating or inferring details.
-Output ONLY valid JSON exactly matching the requested schema — no markdown fences, no extra text, no explanation outside the JSON."""You are an elite company intelligence analyst at a top-tier global research firm (like McKinsey, Gartner, or CB Insights).
-Your analysis is precise, factual, evidence-based, and structured.
-Always base your answers on the provided source material. If specific information is not available, make your best informed estimate and clearly note uncertainty.
+CRITICAL RULE: Always base your answers on the provided source material. If specific information is not available, you may synthesize available signals but clearly note uncertainty, rather than aggressively rejecting valid data. 
 Output ONLY valid JSON exactly matching the requested schema — no markdown fences, no extra text, no explanation outside the JSON."""
 
 
@@ -669,95 +666,47 @@ class DataValidationAgent:
 
 async def generate_full_report_sections(
     company_name: str,
-    raw_data: dict[str, Any],
-    emit_cb: Callable[[str, str, int], Awaitable[None]] | None = None,
-) -> dict[str, Any]:
-    """
-    Run all core report sections in batched parallel groups to avoid rate limits.
-    
-    Phase 1A: First 3 sections (highest priority)
-    Phase 1B: Next 3 sections
-    Phase 1C: Final 3 sections  
-    Phase 2: Dependent sections using Phase 1 results
-    """
-    logger.info("Phase 1: Concurrent Generation of all core sections")
+    raw_data: dict,
+    emit_cb = None,
+) -> dict:
+    logger.info("Phase 1: Concurrent Generation of requested core sections")
     if emit_cb:
         await emit_cb("analyzing", "Launching AI Agents...", 55)
+    
     (
         (overview, m1),
-        (business_model, m2),
-        (revenue_intel, m3),
-        (products, m4),
-        (tech_stack, m5),
-        (market_analysis, m6),
-        (competitors, m7),
-        (milestones, m8),
-        (geographic_presence, m9),
+        (revenue_intel, m2),
+        (market_analysis, m3),
+        (competitors, m4),
     ) = await asyncio.gather(
         _safe_section(generate_overview(company_name, raw_data), "overview", (CompanyOverview(name=company_name), "error")),
-        _safe_section(generate_business_model(company_name, raw_data), "business_model", (BusinessModel(), "error")),
         _safe_section(generate_revenue_intelligence(company_name, raw_data), "revenue_intelligence", (RevenueIntelligence(), "error")),
-        _safe_section(generate_products(company_name, raw_data), "products", ([], "error")),
-        _safe_section(generate_tech_stack(company_name, raw_data), "tech_stack", (TechStack(), "error")),
         _safe_section(generate_market_analysis(company_name, raw_data), "market_analysis", (MarketAnalysis(), "error")),
         _safe_section(generate_competitors(company_name, raw_data), "competitors", ([], "error")),
-        _safe_section(generate_milestones(company_name, raw_data), "milestones", ([], "error")),
-        _safe_section(generate_geographic_presence(company_name, raw_data), "geographic_presence", (GeographicPresence(), "error")),
     )
 
     await asyncio.sleep(2)
 
-    # Phase 2: Sections that depend on Phase 1 results
-    logger.info("Phase 2: Feature matrix, narrative, recommendations, knowledge graph, AI summary")
+    logger.info("Phase 2: AI Summary generation")
     if emit_cb:
-        await emit_cb("cross_validating", "Cross-validating Sources...", 85)
-    sections_summary_raw = json.dumps({
-        "overview": overview.model_dump(),
-        "business_model": business_model.model_dump(),
-        "revenue_intelligence": revenue_intel.model_dump(),
-        "market_analysis": market_analysis.model_dump(),
-    }, default=str)[:4000]
+        await emit_cb("cross_validating", "Synthesizing Final Output...", 85)
 
-    sections_summary = await DataValidationAgent.validate(company_name, raw_data, sections_summary_raw)
-
-    (
-        (feature_matrix, m10),
-        (competitor_narrative, m11),
-        (strategic_recommendations, m12),
-        (knowledge_graph, m13),
-        (ai_summary, m14),
-    ) = await asyncio.gather(
-        _safe_section(generate_feature_matrix(company_name, competitors, raw_data), "feature_matrix", ([], "error")),
-        _safe_section(generate_competitor_narrative(company_name, raw_data), "competitor_narrative", (CompetitorNarrative(), "error")),
-        _safe_section(generate_strategic_recommendations(company_name, raw_data, sections_summary), "strategic_recommendations", ([], "error")),
-        _safe_section(generate_knowledge_graph(company_name, overview, competitors, raw_data), "knowledge_graph", (KnowledgeGraph(), "error")),
-        _safe_section(
-            generate_ai_summary(company_name, raw_data, {
-                "overview": overview.model_dump(),
-                "business_model": business_model.model_dump(),
-                "revenue_intelligence": revenue_intel.model_dump(),
-            }),
-            "ai_summary",
-            (AiSummary(executive_summary=f"Analysis for {company_name}."), "error"),
-        ),
+    (ai_summary, m5) = await _safe_section(
+        generate_ai_summary(company_name, raw_data, {
+            "overview": overview.model_dump(),
+            "revenue_intelligence": revenue_intel.model_dump(),
+        }),
+        "ai_summary",
+        (AiSummary(executive_summary=f"Analysis for {company_name}."), "error")
     )
 
-    models_used = list({m for m in [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14] if m and m != "error"})
+    models_used = list({m for m in [m1, m2, m3, m4, m5] if m and m != "error"})
 
     return {
         "overview": overview,
-        "business_model": business_model,
         "revenue_intelligence": revenue_intel,
-        "products": products,
-        "tech_stack": tech_stack,
         "market_analysis": market_analysis,
         "competitors": competitors,
-        "milestones": milestones,
-        "feature_matrix": feature_matrix,
-        "competitor_narrative": competitor_narrative,
-        "geographic_presence": geographic_presence,
-        "strategic_recommendations": strategic_recommendations,
-        "knowledge_graph": knowledge_graph,
         "ai_summary": ai_summary,
         "models_used": models_used,
     }

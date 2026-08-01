@@ -34,7 +34,7 @@ export function MarketingTopNav() {
             <div className="w-8 h-8 flex items-center justify-center">
               <img src="/logo.png" alt="Nexora AI" className="h-full object-contain" />
             </div>
-            <span className="font-syne font-bold text-lg text-nexora-charcoal tracking-tight">
+            <span className="font-syne font-bold text-lg text-white tracking-tight">
               Nexora AI
             </span>
           </Link>

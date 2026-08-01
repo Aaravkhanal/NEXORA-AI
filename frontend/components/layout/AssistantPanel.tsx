@@ -146,30 +146,30 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-          className="fixed top-4 bottom-4 right-4 w-[420px] max-w-[calc(100vw-2rem)] bg-white rounded-3xl shadow-glass border border-black/5 flex flex-col z-50"
+          className="fixed top-4 bottom-4 right-4 w-[420px] max-w-[calc(100vw-2rem)] bg-[#1A1A1A] rounded-3xl shadow-glass border border-white/10 flex flex-col z-50"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-black/5 shrink-0 bg-white rounded-t-2xl">
+          <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0 bg-[#1A1A1A] rounded-t-2xl">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-nexora-emerald/10 flex items-center justify-center">
                 <SparkleIcon className="w-4 h-4 text-nexora-emerald" />
               </div>
               <div>
-                <h3 className="font-semibold text-nexora-charcoal text-sm">Nexora AI Assistant</h3>
+                <h3 className="font-semibold text-white text-sm">Nexora AI Assistant</h3>
                 <p className="text-[11px] text-nexora-mediumgray">Online</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button
                 onClick={handleClear}
-                className="p-2 text-nexora-mediumgray hover:text-nexora-charcoal hover:bg-nexora-lightgray rounded-full transition-colors"
+                className="p-2 text-nexora-mediumgray hover:text-white hover:bg-white/10 rounded-full transition-colors"
                 title="Clear chat"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
               <button
                 onClick={onClose}
-                className="p-2 text-nexora-mediumgray hover:text-nexora-charcoal hover:bg-nexora-lightgray rounded-full transition-colors"
+                className="p-2 text-nexora-mediumgray hover:text-white hover:bg-white/10 rounded-full transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -195,8 +195,8 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
                   <div className={`group relative max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                     <div className={`text-[15px] leading-relaxed ${
                       msg.role === 'user'
-                        ? 'bg-nexora-surface text-nexora-charcoal px-4 py-3 rounded-2xl rounded-tr-sm'
-                        : 'text-nexora-charcoal px-2 py-2'
+                        ? 'bg-white/10 text-white px-4 py-3 rounded-2xl rounded-tr-sm'
+                        : 'text-white px-2 py-2'
                     }`}>
                       {msg.role === 'assistant' ? (
                         <div className="prose-nexora prose prose-sm max-w-none">
@@ -259,7 +259,7 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
                     <button
                       key={i}
                       onClick={() => sendMessage(q)}
-                      className="w-full flex items-center gap-3 p-3 text-left text-xs font-medium text-nexora-charcoal hover:bg-nexora-warmwhite border border-black/5 hover:border-nexora-emerald/30 rounded-xl transition-all group"
+                      className="w-full flex items-center gap-3 p-3 text-left text-xs font-medium text-white hover:bg-white/10 border border-white/10 hover:border-nexora-emerald/30 rounded-xl transition-all group"
                     >
                       <SparkleIcon className="w-3.5 h-3.5 text-nexora-mediumgray group-hover:text-nexora-emerald transition-colors shrink-0" />
                       {q}
@@ -273,7 +273,7 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 bg-white rounded-b-2xl shrink-0">
+          <div className="p-4 bg-[#1A1A1A] border-t border-white/10 rounded-b-2xl shrink-0">
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
               <input
                 ref={inputRef}
@@ -282,12 +282,12 @@ export function AssistantPanel({ isOpen, onClose }: AssistantPanelProps) {
                 onChange={e => setInput(e.target.value)}
                 placeholder="Message Nexora AI..."
                 disabled={isLoading}
-                className="flex-1 bg-nexora-surface border border-transparent rounded-full py-3 px-5 text-[14px] text-nexora-charcoal placeholder:text-nexora-mediumgray focus:outline-none focus:ring-2 focus:ring-nexora-emerald/20 focus:border-nexora-emerald/50 transition-all disabled:opacity-60"
+                className="flex-1 bg-white/5 border border-transparent rounded-full py-3 px-5 text-[14px] text-white placeholder:text-nexora-mediumgray focus:outline-none focus:ring-2 focus:ring-nexora-emerald/20 focus:border-nexora-emerald/50 transition-all disabled:opacity-60"
               />
               <button
                 type="submit"
                 disabled={isLoading || !input.trim()}
-                className="w-10 h-10 bg-nexora-charcoal text-white rounded-full flex items-center justify-center hover:bg-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                className="w-10 h-10 bg-nexora-emerald text-white rounded-full flex items-center justify-center hover:bg-nexora-forest transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </button>

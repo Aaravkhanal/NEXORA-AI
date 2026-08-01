@@ -72,6 +72,13 @@ export function SearchInput({ className = '', autoFocus = false, large = false }
           isPolling = false
           setProgressValue(100)
           setProgressMsg('Finalizing dashboard...')
+          
+          try {
+            const history = JSON.parse(localStorage.getItem('recent_searches') || '[]')
+            const entry = { id: status.report_id, name: input, date: new Date().toISOString() }
+            const filtered = history.filter((h: any) => h.name.toLowerCase() !== input.toLowerCase())
+            localStorage.setItem('recent_searches', JSON.stringify([entry, ...filtered].slice(0, 10)))
+          } catch (e) {}
           setTimeout(() => {
             router.push(`/report/${status.report_id}`)
             setTimeout(() => {

@@ -55,12 +55,12 @@ function EmptyState({ title, desc }: { title: string; desc: string }) {
 
 function ErrorState({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center bg-rose-50/50 rounded-3xl border border-rose-100">
-      <div className="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center mb-4 border border-rose-200">
-        <AlertCircle className="w-7 h-7 text-rose-500" />
+    <div className="flex flex-col items-center justify-center py-16 text-center bg-white/5 rounded-3xl border border-white/10">
+      <div className="w-14 h-14 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-4 border border-rose-500/20">
+        <AlertTriangle className="w-7 h-7 text-rose-400" />
       </div>
-      <h4 className="font-bold text-rose-700 mb-1">{title}</h4>
-      <p className="text-sm text-rose-600/80 max-w-xs">{desc}</p>
+      <h4 className="font-bold text-rose-400 mb-1">{title}</h4>
+      <p className="text-sm text-rose-400/80 max-w-xs">{desc}</p>
     </div>
   )
 }
@@ -206,6 +206,29 @@ function OverviewTab({ report }: { report: Report }) {
   )
 }
 
+
+function GrowthTab({ report }: { report: Report }) {
+  const rev = report.revenue_intelligence
+  return (
+    <div className="glass-container glass-green-border rounded-3xl p-6">
+      <h3 className="font-bold text-white mb-5 flex items-center gap-2">
+        <TrendingUp className="w-4 h-4 text-nexora-emerald" /> Growth Metrics
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
+          <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-2">YoY Growth</p>
+          <p className="text-3xl font-bold text-white">{rev?.growth_rate_yoy != null ? `${rev.growth_rate_yoy.toFixed(1)}%` : "N/A"}</p>
+        </div>
+        <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
+          <p className="text-[10px] font-bold text-nexora-mediumgray uppercase tracking-wider mb-2">Estimated TAM</p>
+          <p className="text-xl font-bold text-white">{report.market_analysis?.tam_usd ? `$${(report.market_analysis.tam_usd / 1e9).toFixed(1)}B` : "N/A"}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
 function FinancialsTab({ report }: { report: Report }) {
   const rev = report.revenue_intelligence
   const isPublic = rev?.is_public
@@ -284,6 +307,32 @@ function FinancialsTab({ report }: { report: Report }) {
       {fundingTimeline.length === 0 && rev?.annual_revenue_usd == null && (
         <EmptyState title="Limited Financial Data" desc="No public financial data could be found for this company. This is common for small private companies." />
       )}
+
+      {/* Visual Chart */}
+      <div className="mt-8 p-6 bg-white/5 rounded-2xl border border-white/10">
+        <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2"><DollarSign className="w-4 h-4 text-nexora-emerald" /> Revenue vs Funding Comparison</h4>
+        <div className="space-y-4">
+          <div>
+            <div className="flex justify-between text-xs text-nexora-mediumgray mb-1">
+              <span>Annual Revenue</span>
+              <span className="text-white font-bold">{fmtUSD(rev?.annual_revenue_usd) || "N/A"}</span>
+            </div>
+            <div className="w-full bg-white/10 rounded-full h-2">
+              <div className="bg-nexora-emerald h-2 rounded-full" style={{ width: rev?.annual_revenue_usd ? "70%" : "0%" }}></div>
+            </div>
+          </div>
+          <div>
+            <div className="flex justify-between text-xs text-nexora-mediumgray mb-1">
+              <span>Total Funding</span>
+              <span className="text-white font-bold">{fmtUSD(rev?.total_funding_usd) || "N/A"}</span>
+            </div>
+            <div className="w-full bg-white/10 rounded-full h-2">
+              <div className="bg-nexora-blue h-2 rounded-full" style={{ width: rev?.total_funding_usd ? "45%" : "0%" }}></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   )
 }
@@ -799,15 +848,10 @@ function GeographyTab({ report }: { report: Report }) {
 // ─── Main Component ──────────────────────────────────────
 
 const TABS = [
-  { id: 'Overview', icon: BarChart3 },
-  { id: 'Financials', icon: DollarSign },
-  { id: 'Competitors', icon: Target },
-  { id: 'SWOT', icon: Shield },
-  { id: 'Technology', icon: Cpu },
-  { id: 'News', icon: Newspaper },
-  { id: 'Timeline', icon: GitBranch },
-  { id: 'Geography', icon: Map },
-  { id: 'AI Insights', icon: Brain },
+  { id: "overview", label: "Details", icon: BarChart3 },
+  { id: "financials", label: "Financials", icon: DollarSign },
+  { id: "competitors", label: "Competitors", icon: Target },
+  { id: "growth", label: "Growth", icon: TrendingUp },
 ]
 
 import { Shield } from 'lucide-react'
@@ -819,7 +863,7 @@ export default function ReportDashboard() {
 
   const [report, setReport] = useState<Report>(null)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('Overview')
+  const [activeTab, setActiveTab] = useState('overview')
 
   useEffect(() => {
     const loadReport = async () => {
@@ -983,15 +1027,10 @@ export default function ReportDashboard() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          {activeTab === 'Overview' && <OverviewTab report={report} />}
-          {activeTab === 'Financials' && <FinancialsTab report={report} />}
-          {activeTab === 'Competitors' && <CompetitorsTab report={report} />}
-          {activeTab === 'SWOT' && <SWOTTab report={report} />}
-          {activeTab === 'Technology' && <TechTab report={report} />}
-          {activeTab === 'News' && <NewsTab report={report} />}
-          {activeTab === 'Timeline' && <TimelineTab report={report} />}
-          {activeTab === 'Geography' && <GeographyTab report={report} />}
-          {activeTab === 'AI Insights' && <AIInsightsTab report={report} />}
+          {activeTab === 'overview' && <OverviewTab report={report} />}
+          {activeTab === 'financials' && <FinancialsTab report={report} />}
+          {activeTab === 'competitors' && <CompetitorsTab report={report} />}
+          {activeTab === 'growth' && <GrowthTab report={report} />}
         </motion.div>
       </AnimatePresence>
     </motion.div>

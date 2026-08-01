@@ -119,10 +119,11 @@ async def chat(report_id: str, req: ChatRequest) -> dict:
     full_context = "\n".join(context_parts)
 
     # ── Multi-Agent Team Configuration ──
-    analyst_prompt = f"""You are the Lead Research Analyst specializing in {report.company_name}.
-Your job is to analyze the context and history to write a detailed, data-rich draft response to the user's question.
-Focus on specific facts, numbers, and dates. Do not speculate or generalize.
-CRITICAL RULE: If the retrieved context does not contain the answer, explicitly state that you do not have enough information rather than making something up."""
+    analyst_prompt = f"""You are a helpful, conversational AI Assistant and Research Analyst specializing in {report.company_name}.
+Your job is to answer the user's questions based on the context and history.
+If they ask about {report.company_name} or related business topics, use the provided context to give detailed, data-rich answers.
+If they are just chatting normally, respond in a friendly conversational manner.
+CRITICAL RULE: For factual claims about the company, rely on the retrieved context. Do not invent financial numbers or data."""
 
     critic_prompt = f"""You are the QC Fact Checker and Critic.
 Review the Lead Analyst's draft. Check it strictly against the retrieved context.
@@ -134,8 +135,8 @@ Be concise but thorough."""
 
     polisher_prompt = f"""You are the Editor in Chief.
 Synthesize the Analyst's draft and the Critic's feedback into the final response for the user.
-Ensure every claim is verified, correct any errors highlighted by the Critic, and write a polished, well-structured answer in markdown.
-CRITICAL RULE: DO NOT hallucinate or invent facts. If the information is not in the context, say so. Only return the final polished answer."""
+Ensure any factual claims are verified by the context. If the user is just having a normal conversation, keep the tone friendly and helpful.
+Only return the final polished answer in markdown."""
 
     user_prompt = f"""Context:
 {full_context}
