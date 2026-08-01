@@ -50,7 +50,7 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
         {/* Logo area */}
         <div className="h-20 flex items-center justify-between px-6 shrink-0">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className=\"w-16 h-10 rounded-[50%] overflow-hidden flex items-center justify-center bg-white/5 border border-white/10\"><img src=\"/logo.png\" alt=\"Nexora Intelligence\" className=\"w-full h-full object-cover group-hover:scale-105 transition-transform\" /></div>
+            <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-white/5 border border-white/10"><img src="/logo.png" alt="Nexora Intelligence" className="w-full h-full object-cover group-hover:scale-105 transition-transform" /></div>
           </Link>
           <button onClick={closeSidebar} className="lg:hidden p-1 text-nexora-mediumgray hover:text-white rounded-md">
             <X className="w-5 h-5" />

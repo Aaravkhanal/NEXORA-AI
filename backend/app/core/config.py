@@ -13,9 +13,9 @@ class Settings(BaseSettings):
     # ── Primary LLMs ──────────────────────────────────────────────────────────
     gemini_api_key: str = ""
     openai_api_key: str = ""
-    openai_api_base: str = "https://api.openai.com/v1"
-    openai_model_name: str = "gpt-4o"
-    openai_embedding_model: str = "text-embedding-3-small"
+    openai_api_base: str = "https://integrate.api.nvidia.com/v1"
+    openai_model_name: str = "meta/llama-3.1-70b-instruct"
+    openai_embedding_model: str = "nvidia/embeddings-nv-embed-qa-4"
 
     # ── Additional Providers ──────────────────────────────────────────────────
     groq_api_key: str = ""

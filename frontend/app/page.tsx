@@ -92,8 +92,8 @@ export default function LandingPage() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <div className="w-32 h-16 mx-auto bg-white/5 border border-white/10 rounded-[50%] p-2 shadow-glass flex items-center justify-center">
-              <img src="/logo.png" alt="Nexora AI" className="h-full object-contain" />
+            <div className="w-28 h-28 mx-auto bg-white/5 border border-white/10 rounded-full shadow-glass flex items-center justify-center overflow-hidden">
+              <img src="/logo.png" alt="Nexora AI" className="w-full h-full object-cover" />
             </div>
           </motion.div>
 
